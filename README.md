@@ -37,7 +37,7 @@ Java 파일 이외에는 절대 업로드 하지 않습니다.
 📝 rename: 파일, 폴더명 수정 및 파일, 폴더 이동
 ```
 
-# When a developing a new feature
+# When developing a new feature
 ```
 1. 기능별로 브랜치를 생성합니다. (로그인 기능 개발 예시: feat/login)
 2. 생성한 브랜치에서 기능 개발 작업 후 Pull Request 합니다.
