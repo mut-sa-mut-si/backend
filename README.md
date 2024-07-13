@@ -18,12 +18,6 @@
   </table>
 </div> </br> </br> </br>
 
-# Fork this repository
-```
-1. 해당 리포지토리를 포크합니다.
-2. 포크된 리포지토리를 개인 개발 환경에 클론합니다.
-```
-
 # File management rule
 ```
 Java 파일 이외에는 절대 업로드 하지 않습니다.
