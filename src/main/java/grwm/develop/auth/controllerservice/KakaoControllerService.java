@@ -1,4 +1,4 @@
-package grwm.develop.auth;
+package grwm.develop.auth.controllerservice;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
