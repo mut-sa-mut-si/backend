@@ -1,9 +1,9 @@
 <div align="center">
   <table>
     <tr>
-      <th>프로필</th>
-      <th>프로필</th>
-      <th>프로필</th>
+      <th>BE</th>
+      <th>BE</th>
+      <th>BE</th>
     </tr>
     <tr>
       <td><a href="https://github.com/MinseokGo"><img src="https://github.com/MinseokGo.png" width="100" /></a></td>
