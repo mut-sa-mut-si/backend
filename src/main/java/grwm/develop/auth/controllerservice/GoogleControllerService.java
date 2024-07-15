@@ -1,9 +1,13 @@
 package grwm.develop.auth.controllerservice;
 
+import static grwm.develop.auth.Constants.GOOGLE;
+
+import grwm.develop.auth.properties.GoogleAuthProperties;
+import grwm.develop.auth.utils.URLUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component("google")
+@Component(GOOGLE)
 @RequiredArgsConstructor
 public class GoogleControllerService implements ControllerService {
 

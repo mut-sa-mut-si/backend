@@ -1,9 +1,13 @@
 package grwm.develop.auth.controllerservice;
 
+import static grwm.develop.auth.Constants.KAKAO;
+
+import grwm.develop.auth.properties.KakaoAuthProperties;
+import grwm.develop.auth.utils.URLUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component("kakao")
+@Component(KAKAO)
 @RequiredArgsConstructor
 public class KakaoControllerService implements ControllerService {
 
