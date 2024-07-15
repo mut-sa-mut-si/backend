@@ -1,11 +1,12 @@
-package grwm.develop.auth.application;
+package grwm.develop.auth.application.kakao;
 
-import static grwm.develop.auth.Constants.AUTHORIZATION_CODE;
-import static grwm.develop.auth.Constants.TOKEN_PREFIX;
+import static grwm.develop.utils.Constants.AUTHORIZATION_CODE;
+import static grwm.develop.utils.Constants.TOKEN_PREFIX;
 
-import grwm.develop.auth.application.client.kakao.KakaoMemberInfoClient;
-import grwm.develop.auth.application.client.kakao.KakaoTokenClient;
-import grwm.develop.auth.application.dto.KakaoMemberProfile;
+import grwm.develop.auth.application.AuthService;
+import grwm.develop.auth.application.kakao.client.KakaoMemberInfoClient;
+import grwm.develop.auth.application.kakao.client.KakaoTokenClient;
+import grwm.develop.auth.application.kakao.dto.KakaoMemberProfile;
 import grwm.develop.auth.properties.KakaoAuthProperties;
 import grwm.develop.member.Member;
 import grwm.develop.member.MemberRepository;
@@ -33,7 +34,7 @@ public class KakaoAuthService implements AuthService {
     @Transactional
     public String authorization(String code) {
         String token = getAccessToken(code);
-        KakaoMemberProfile profile = kakaoMemberInfoClient.getUserProfile(TOKEN_PREFIX + token);
+        KakaoMemberProfile profile = kakaoMemberInfoClient.getMemberProfile(TOKEN_PREFIX + token);
         Member member = profile.toEntity();
         checkedDuplicateEmail(member);
         memberRepository.save(member);

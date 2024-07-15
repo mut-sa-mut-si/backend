@@ -1,4 +1,4 @@
-package grwm.develop.auth.utils;
+package grwm.develop.utils;
 
 import grwm.develop.auth.properties.AuthProperties;
 

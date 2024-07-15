@@ -1,4 +1,4 @@
-package grwm.develop.auth.controllerservice;
+package grwm.develop.auth.presentation.controllerservice;
 
 public interface ControllerService {
 

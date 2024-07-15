@@ -1,10 +1,10 @@
-package grwm.develop.auth.controllerservice;
+package grwm.develop.auth.presentation.controllerservice;
 
-import static grwm.develop.auth.Constants.KAKAO;
+import static grwm.develop.utils.Constants.KAKAO;
 
-import grwm.develop.auth.application.KakaoAuthService;
+import grwm.develop.auth.application.kakao.KakaoAuthService;
 import grwm.develop.auth.properties.KakaoAuthProperties;
-import grwm.develop.auth.utils.URLUtils;
+import grwm.develop.utils.URLUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class KakaoControllerService implements ControllerService {
 
     private final KakaoAuthProperties authProperties;
-    private final KakaoAuthService openFeignAuthService;
+    private final KakaoAuthService authService;
 
     @Override
     public String getRedirectURL() {
@@ -22,6 +22,6 @@ public class KakaoControllerService implements ControllerService {
 
     @Override
     public String authorize(String code) {
-        return openFeignAuthService.authorization(code);
+        return authService.authorization(code);
     }
 }

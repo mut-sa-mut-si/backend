@@ -1,4 +1,4 @@
-package grwm.develop.auth.application.dto;
+package grwm.develop.auth.application.kakao.dto;
 
 public record KakaoAccount(String email, Profile profile) {
 }

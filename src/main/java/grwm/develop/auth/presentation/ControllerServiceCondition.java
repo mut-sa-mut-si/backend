@@ -1,6 +1,6 @@
-package grwm.develop.auth;
+package grwm.develop.auth.presentation;
 
-import grwm.develop.auth.controllerservice.ControllerService;
+import grwm.develop.auth.presentation.controllerservice.ControllerService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

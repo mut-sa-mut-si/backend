@@ -1,9 +1,9 @@
 package grwm.develop.auth.properties;
 
-import static grwm.develop.auth.Constants.CLIENT_ID;
-import static grwm.develop.auth.Constants.GOOGLE;
-import static grwm.develop.auth.Constants.REDIRECT_URI;
-import static grwm.develop.auth.Constants.SCOPE;
+import static grwm.develop.utils.Constants.CLIENT_ID;
+import static grwm.develop.utils.Constants.GOOGLE;
+import static grwm.develop.utils.Constants.REDIRECT_URI;
+import static grwm.develop.utils.Constants.SCOPE;
 
 import java.util.Map;
 import lombok.Getter;

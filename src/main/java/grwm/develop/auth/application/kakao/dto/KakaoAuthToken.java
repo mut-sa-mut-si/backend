@@ -1,7 +1,8 @@
-package grwm.develop.auth.application;
+package grwm.develop.auth.application.kakao.dto;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import grwm.develop.auth.application.AuthToken;
 
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record KakaoAuthToken(

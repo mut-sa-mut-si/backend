@@ -1,9 +1,10 @@
-package grwm.develop.auth.controllerservice;
+package grwm.develop.auth.presentation.controllerservice;
 
-import static grwm.develop.auth.Constants.GOOGLE;
+import static grwm.develop.utils.Constants.GOOGLE;
 
+import grwm.develop.auth.application.google.GoogleAuthService;
 import grwm.develop.auth.properties.GoogleAuthProperties;
-import grwm.develop.auth.utils.URLUtils;
+import grwm.develop.utils.URLUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class GoogleControllerService implements ControllerService {
 
     private final GoogleAuthProperties googleAuthProperties;
-    private final GoogleOpenFeignAuthService googleOpenFeignAuthService;
+    private final GoogleAuthService authService;
 
     @Override
     public String getRedirectURL() {
@@ -21,6 +22,6 @@ public class GoogleControllerService implements ControllerService {
 
     @Override
     public String authorize(String code) {
-        return googleOpenFeignAuthService.authorization(code);
+        return authService.authorization(code);
     }
 }

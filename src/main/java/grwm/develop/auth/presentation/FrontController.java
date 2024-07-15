@@ -1,6 +1,6 @@
-package grwm.develop.auth;
+package grwm.develop.auth.presentation;
 
-import grwm.develop.auth.controllerservice.ControllerService;
+import grwm.develop.auth.presentation.controllerservice.ControllerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/auth/{name}")
+@RequestMapping("/api/v1/login/{name}")
 public class FrontController {
 
     private final ControllerServiceCondition condition;
