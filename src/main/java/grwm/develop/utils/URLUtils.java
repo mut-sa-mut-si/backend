@@ -1,6 +1,6 @@
 package grwm.develop.utils;
 
-import grwm.develop.auth.properties.AuthProperties;
+import grwm.develop.auth.login.properties.AuthProperties;
 
 public final class URLUtils {
 
