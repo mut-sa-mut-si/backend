@@ -1,5 +1,6 @@
 package grwm.develop.member;
 
+import grwm.develop.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,16 +8,20 @@ import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseEntity {
 
-    @Column(nullable = false)
+    @Column(length = 16, nullable = false)
     private String name;
 
-    @Column(unique = true, nullable = false)
+    @Column(length = 128, nullable = false)
     private String email;
 
     @Column(nullable = false)
