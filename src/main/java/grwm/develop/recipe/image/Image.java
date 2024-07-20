@@ -1,7 +1,6 @@
-package grwm.develop.comment;
+package grwm.develop.recipe.image;
 
 import grwm.develop.BaseEntity;
-import grwm.develop.member.Member;
 import grwm.develop.recipe.Recipe;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,14 +16,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment extends BaseEntity {
+public class Image extends BaseEntity {
 
-    @Column(length = 512, nullable = false)
-    private String content;
-
-    @JoinColumn(name = "member_id")
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    private Member member;
+    @Column(length = 2048, nullable = false)
+    private String url;
 
     @JoinColumn(name = "recipe_id")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

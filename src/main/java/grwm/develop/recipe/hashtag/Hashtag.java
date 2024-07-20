@@ -1,4 +1,4 @@
-package grwm.develop.image;
+package grwm.develop.recipe.hashtag;
 
 import grwm.develop.BaseEntity;
 import grwm.develop.recipe.Recipe;
@@ -16,10 +16,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Image extends BaseEntity {
+public class Hashtag extends BaseEntity {
 
-    @Column(length = 2048, nullable = false)
-    private String url;
+    @Column(length = 128, nullable = false)
+    private String content;
 
     @JoinColumn(name = "recipe_id")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
