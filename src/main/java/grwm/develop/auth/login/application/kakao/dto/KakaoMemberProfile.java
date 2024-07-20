@@ -11,10 +11,18 @@ public record KakaoMemberProfile(Long id, KakaoAccount kakaoAccount) implements 
 
     @Override
     public Member toEntity() {
-        return Member.builder()
-                .name(kakaoAccount.profile().nickname())
-                .email(kakaoAccount.email())
-                .service(Service.KAKAO)
-                .build();
+        if (kakaoAccount.email().isEmpty()) {
+            return Member.builder()
+                    .name(kakaoAccount.profile().nickname())
+                    .email(id.toString() + "@grwm.com")
+                    .service(Service.KAKAO)
+                    .build();
+        } else {
+            return Member.builder()
+                    .name(kakaoAccount.profile().nickname())
+                    .email(kakaoAccount.email())
+                    .service(Service.KAKAO)
+                    .build();
+        }
     }
 }

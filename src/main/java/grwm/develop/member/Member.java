@@ -45,6 +45,9 @@ public class Member {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean isDeleted;
+
     @Builder
     public Member(String name, String email, Service service) {
         this.name = name;
