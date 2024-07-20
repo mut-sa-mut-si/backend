@@ -1,16 +1,22 @@
 package grwm.develop.recipe;
 
 import grwm.develop.BaseEntity;
-import grwm.develop.Category;
 import grwm.develop.member.Member;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Entity
-@ToString
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class Recipe extends BaseEntity {
 
     @Column(length = 128, nullable = false)
@@ -28,5 +34,4 @@ public class Recipe extends BaseEntity {
 
     @Column(nullable = false)
     private boolean isPublic;
-
 }
