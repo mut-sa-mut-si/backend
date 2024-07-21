@@ -30,8 +30,7 @@ public class RecipeService {
 
     private static final String BUCKET = "bucket";
     private static final String IMAGE_SAVE_PATH_PREFIX = "images/";
-
-
+    
     private final S3Properties s3Properties;
     private final AmazonS3Client amazonS3Client;
     private final ImageRepository imageRepository;
