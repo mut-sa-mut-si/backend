@@ -66,6 +66,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
+    // AWS S3
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     runtimeOnly 'com.h2database:h2'
