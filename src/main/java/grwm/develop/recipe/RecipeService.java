@@ -9,6 +9,7 @@ import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
 import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
+import grwm.develop.utils.S3Properties;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,7 +18,6 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,9 +28,11 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional(readOnly = true)
 public class RecipeService {
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+    private static final String BUCKET = "bucket";
+    private static final String IMAGE_SAVE_PATH_PREFIX = "images/";
 
+
+    private final S3Properties s3Properties;
     private final AmazonS3Client amazonS3Client;
     private final ImageRepository imageRepository;
     private final RecipeRepository recipeRepository;
@@ -73,21 +75,23 @@ public class RecipeService {
 
     private List<Image> getUploadedImages(List<MultipartFile> images, Recipe recipe) {
         return images.stream()
-                .map(image -> {
-                    try {
-                        return convertFile(image)
-                                .orElseThrow(IllegalArgumentException::new);
-                    } catch (IOException e) {
-                        log.error("Do not converted multipart file to image.");
-                        throw new IllegalArgumentException("Do not converted multipart file to image.");
-                    }
-                })
+                .map(this::tryConvertFile)
                 .map(this::uploadImage)
                 .map(uploadImageUrl -> Image.builder()
                         .url(uploadImageUrl)
                         .recipe(recipe)
                         .build())
                 .toList();
+    }
+
+    private File tryConvertFile(MultipartFile image) {
+        try {
+            return convertFile(image)
+                    .orElseThrow(IllegalArgumentException::new);
+        } catch (IOException e) {
+            log.error("Do not converted multipart file to image.");
+            throw new IllegalArgumentException("Do not converted multipart file to image.");
+        }
     }
 
     private Optional<File> convertFile(MultipartFile image) throws IOException {
@@ -102,7 +106,8 @@ public class RecipeService {
     }
 
     private String uploadImage(File file) {
-        String fileName = "images/" + file.getName();
+        String bucket = s3Properties.getS3().get(BUCKET);
+        String fileName = IMAGE_SAVE_PATH_PREFIX + file.getName();
         amazonS3Client.putObject(
                 new PutObjectRequest(bucket, fileName, file)
                         .withCannedAcl(CannedAccessControlList.PublicRead)
