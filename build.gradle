@@ -62,6 +62,10 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     runtimeOnly 'com.h2database:h2'

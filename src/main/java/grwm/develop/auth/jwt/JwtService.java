@@ -1,6 +1,5 @@
 package grwm.develop.auth.jwt;
 
-import grwm.develop.member.Member;
 import grwm.develop.member.MemberRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -8,13 +7,11 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.persistence.EntityNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -49,14 +46,11 @@ public class JwtService {
                 .compact();
     }
 
-    @Transactional(readOnly = true)
-    public Member parse(String token) {
+    public String parse(String token) {
         validTokenPrefix(token);
 
         try {
-            String email = getEmail(token);
-            return memberRepository.findByEmail(email)
-                    .orElseThrow(EntityNotFoundException::new);
+            return getEmail(token);
         } catch (ExpiredJwtException e) {
             log.error("토큰 만료", e);
             throw new IllegalArgumentException("토큰 만료", e);
