@@ -33,8 +33,12 @@ public class KakaoAuthService implements AuthService {
     @Override
     @Transactional
     public Member authorization(String code) {
+        log.info("get token");
         String token = getAccessToken(code);
+        log.info("get token success");
+        log.info("get profile");
         KakaoMemberProfile profile = kakaoMemberInfoClient.getMemberProfile(TOKEN_PREFIX + token);
+        log.info("get profile success");
         Member member = profile.toEntity();
         try {
             checkedDuplicateEmail(member);
