@@ -9,7 +9,6 @@ import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
 import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
-import grwm.develop.utils.S3Properties;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,6 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,10 +28,11 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional(readOnly = true)
 public class RecipeService {
 
-    private static final String BUCKET = "bucket";
     private static final String IMAGE_SAVE_PATH_PREFIX = "images/";
-    
-    private final S3Properties s3Properties;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
     private final AmazonS3Client amazonS3Client;
     private final ImageRepository imageRepository;
     private final RecipeRepository recipeRepository;
@@ -105,7 +106,6 @@ public class RecipeService {
     }
 
     private String uploadImage(File file) {
-        String bucket = s3Properties.getS3().get(BUCKET);
         String fileName = IMAGE_SAVE_PATH_PREFIX + file.getName();
         amazonS3Client.putObject(
                 new PutObjectRequest(bucket, fileName, file)
