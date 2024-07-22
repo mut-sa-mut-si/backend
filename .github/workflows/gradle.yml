@@ -52,7 +52,7 @@ jobs:
 
     - name: docker build and registry push
       run: |
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login grwm-registry.kr.ncr.ntruss.com --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        docker login grwm-registry.kr.ncr.ntruss.com --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
         docker build -t ${{ secrets.DOCKER_PRIVATE_REPO }}/grwm-server:latest .
         docker push ${{ secrets.DOCKER_REPO }}/grwm-server:latest
 
@@ -97,7 +97,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login grwm-registry.kr.ncr.ntruss.com --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            docker login grwm-registry.kr.ncr.ntruss.com --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
             export NCLOUD_ACCESS_KEY=${{ secrets.NCLOUD_ACCESS_KEY }}
             export NCLOUD_SECRET_KEY=${{ secrets.NCLOUD_SECRET_KEY }}
             export NCLOUD_API_GW=https://ncloud.apigw.ntruss.com
