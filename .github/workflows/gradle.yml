@@ -86,10 +86,14 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
-          password: ${{ secrets.SERVER_PASSWORD }}
+          password: ${{ secrets.SSH_PASSWORD }}
           script: |
+            wget https://ncp-apigw-aws-elb-ap-northeast-2-1-2026525068.s3.ap-northeast-2.amazonaws.com/ncp-iam-authenticator -O /usr/local/bin/ncp-iam-authenticator
+            chmod +x /usr/local/bin/ncp-iam-authenticator
+
             echo "${{ secrets.KUBECONFIG }}" > /tmp/kubeconfig.yml
             export KUBECONFIG=/tmp/kubeconfig.yml
+
             kubectl set image deployment/grwm-server-deployment grwm-server-deployment=grwm-registry.kr.ncr.ntruss.com/grwm-server:latest \
             && kubectl annotate deployment/grwm-server-deployment kubernetes.io/change-cause="Image updated to grwm-registry.kr.ncr.ntruss.com/grwm-server:latest by GitHub Actions"
 
