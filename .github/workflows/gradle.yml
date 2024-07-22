@@ -52,14 +52,13 @@ jobs:
 
     - name: Decode Docker Password
       id: decode
-      run: echo "${{ secrets.NCLOUD_SECRET_KEY }}" | base64 --decode
-      
-    - name: Login to NCP Container Registry
+      run: echo "decoded-password=$(echo "${{ secrets.NCLOUD_SECRET_KEY }}" | base64 --decode)" >> $GITHUB_ENV
+
+    - name: Log in to NCP Docker Registry
       env:
         DOCKER_USERNAME: ${{ secrets.NCLOUD_ACCESS_KEY }}
-        DECODED_DOCKER_PASSWORD: ${{ steps.decode.outputs.NCLOUD_SECRET_KEY }}
-      run: |
-        echo "${{ env.DECODED_DOCKER_PASSWORD }}" | docker login grwm-registry.kr.ncr.ntruss.com --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        DOCKER_PASSWORD: ${{ env.decoded-password }}
+      run: echo "$DOCKER_PASSWORD" | docker login grwm-registry.kr.ncr.ntruss.com --username "$DOCKER_USERNAME" --password-stdin
         
     - name: build and push
       uses: docker/build-push-action@v3
