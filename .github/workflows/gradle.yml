@@ -87,7 +87,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             # ncp-iam-authenticator 다운로드
-            wget https://ncloud-sdk-release.s3.ap-northeast-2.amazonaws.com/ncp-iam-authenticator/ncp-iam-authenticator-linux-amd64 -O /usr/local/bin/ncp-iam-authenticator
+            wget https://example.com/path/to/ncp-iam-authenticator -O /usr/local/bin/ncp-iam-authenticator
             chmod +x /usr/local/bin/ncp-iam-authenticator
 
             echo "${{ secrets.KUBECONFIG }}" > /tmp/kubeconfig.yml
