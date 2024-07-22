@@ -1,10 +1,3 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-
 name: CI/CD github Actions & Docker
 
 on:
@@ -70,23 +63,6 @@ jobs:
         cache-from: type=registry,ref=${{ secrets.DOCKER_LOGIN }}/grwn-server:latest
         cache-to: type=inline
 
-    # - name: docker build and registry push
-    #   run: |
-    #     echo "${{ secrets.DOCKER_PASSWORD }}" | docker login grwm-registry.kr.ncr.ntruss.com --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
-    #     docker build -t ${{ secrets.DOCKER_PRIVATE_REPO }}/grwm-server:latest .
-    #     docker push ${{ secrets.DOCKER_REPO }}/grwm-server:latest
-
-    # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
-    # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
-    #
-    # - name: Setup Gradle
-    #   uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
-    #   with:
-    #     gradle-version: '8.5'
-    #
-    # - name: Build with Gradle 8.5
-    #   run: gradle build
-    
   dependency-submission:
 
     runs-on: ubuntu-latest
@@ -122,8 +98,10 @@ jobs:
             export NCLOUD_API_GW=https://ncloud.apigw.ntruss.com
             export NCLOUD_PROFILE=project
             export PATH=$PATH:$HOME/bin
-            kubectl --kubeconfig="/root/kubeconfig.yml" set image deployment/grwm-server-deployment grwm-server-deployment=grwm-registry.kr.ncr.ntruss.com/grwm-server:latest --record
-            if ! kubectl --kubeconfig="/root/kubeconfig.yml" rollout status deployment/grwm-server-deployment --timeout=60s; then
+            kubectl --kubeconfig="/root/kubeconfig.yaml" set image deployment/grwm-server-deployment grwm-server-deployment=grwm-registry.kr.ncr.ntruss.com/grwm-server:latest \
+            && kubectl annotate deployment/grwm-server-deployment kubernetes.io/change-cause="Image updated to grwm-registry.kr.ncr.ntruss.com/grwm-server:latest by GitHub Actions"
+
+            if ! kubectl --kubeconfig="/root/kubeconfig.yaml" rollout status deployment/grwm-server-deployment --timeout=60s; then
               echo "Deployment failed, starting rollback..."
               kubectl --kubeconfig="/root/kubeconfig.yml" rollout undo deployment/grwm-server-deployment
               echo "Rollback completed."
