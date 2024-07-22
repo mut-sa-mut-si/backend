@@ -20,9 +20,9 @@ public class ReplyController {
     private final ReplyService replyService;
 
     @PostMapping("{recipeId}/comments/{commentId}")
-    public ResponseEntity<ReplyResponse> create(@PathVariable Long commentId,
-                                                @AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                @RequestBody WriteReplyRequest request) {
+    public ResponseEntity<ReplyResponse> CreateReplyResponse(@PathVariable Long commentId,
+                                                             @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                             @RequestBody WriteReplyRequest request) {
         ReplyResponse response = replyService.writeReply(commentId, userDetails.member(), request);
         return ResponseEntity.ok(response);
     }
