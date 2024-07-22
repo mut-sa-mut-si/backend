@@ -2,7 +2,7 @@ name: CI/CD github Actions & Docker
 
 on:
   push:
-    branches: [ "main", "develop" ]
+    branches: ["main", "develop"]
 
 permissions:
   contents: read
@@ -35,11 +35,9 @@ jobs:
           echo "${{ secrets.YML }}" > ./application.yml
         shell: bash
 
-      # gradle chmod
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # gradle build
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
@@ -88,7 +86,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            wget https://ncp-apigw-aws-elb-ap-northeast-2-1-2026525068.s3.ap-northeast-2.amazonaws.com/ncp-iam-authenticator -O /usr/local/bin/ncp-iam-authenticator
+            # ncp-iam-authenticator 다운로드
+            wget https://ncloud-sdk-release.s3.ap-northeast-2.amazonaws.com/ncp-iam-authenticator/ncp-iam-authenticator-linux-amd64 -O /usr/local/bin/ncp-iam-authenticator
             chmod +x /usr/local/bin/ncp-iam-authenticator
 
             echo "${{ secrets.KUBECONFIG }}" > /tmp/kubeconfig.yml
