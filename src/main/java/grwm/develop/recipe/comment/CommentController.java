@@ -20,9 +20,9 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("{id}/comments")
-    public ResponseEntity<CommentResponse> create(@PathVariable Long id,
-                                                  @AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                  @RequestBody WriteCommentRequest request) {
+    public ResponseEntity<CommentResponse> CreateCommentResponse(@PathVariable Long id,
+                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                 @RequestBody WriteCommentRequest request) {
         CommentResponse response = commentService.writeComment(id, userDetails.member(), request);
         return ResponseEntity.ok(response);
     }
