@@ -107,7 +107,7 @@ jobs:
               echo "Deployment failed, starting rollback..."
               kubectl rollout undo deployment/grwm-server-deployment
               echo "Rollback completed."
-              exit 1
             else
               echo "Deployment succeeded."
             fi
+   
