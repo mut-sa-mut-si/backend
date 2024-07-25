@@ -1,6 +1,7 @@
 package grwm.develop.recipe;
 
 import grwm.develop.BaseEntity;
+import grwm.develop.Category;
 import grwm.develop.member.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

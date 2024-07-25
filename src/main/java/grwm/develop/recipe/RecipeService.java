@@ -3,6 +3,7 @@ package grwm.develop.recipe;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import grwm.develop.Category;
 import grwm.develop.member.Member;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
 import grwm.develop.recipe.hashtag.Hashtag;
