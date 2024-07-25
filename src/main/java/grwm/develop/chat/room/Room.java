@@ -1,26 +1,23 @@
-package grwm.develop.member;
+package grwm.develop.chat.room;
 
 import grwm.develop.BaseEntity;
+import grwm.develop.Category;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member extends BaseEntity {
+public class Room extends BaseEntity {
 
-    @Column(length = 16, nullable = false)
-    private String name;
-
-    @Column(length = 128, nullable = false)
-    private String email;
-
-    private int point;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Category category;
 }

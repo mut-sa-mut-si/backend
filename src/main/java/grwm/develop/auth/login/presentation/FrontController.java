@@ -5,7 +5,6 @@ import grwm.develop.auth.login.presentation.controllerservice.ControllerService;
 import grwm.develop.member.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,15 +33,11 @@ public class FrontController {
     public ResponseEntity<String> callback(@PathVariable("name") String name,
                                            @RequestParam("code") String code) {
 
-        log.info("code={}", code);
         ControllerService controllerService = condition.getControllerService(name);
         Member member = controllerService.authorize(code);
         String jwt = jwtService.create(member.getEmail());
-        log.info("jwt={}", jwt);
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", jwt);
         return ResponseEntity.ok()
-                .headers(headers)
+                .header("Authorization", jwt)
                 .body("Token: " + jwt);
     }
 }

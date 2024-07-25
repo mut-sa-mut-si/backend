@@ -1,4 +1,4 @@
-package grwm.develop.recipe;
+package grwm.develop;
 
 public enum Category {
     SKIN,

@@ -1,8 +1,8 @@
-package grwm.develop.recipe.comment;
+package grwm.develop.qna.answer;
 
 import grwm.develop.BaseEntity;
+import grwm.develop.qna.question.Question;
 import grwm.develop.member.Member;
-import grwm.develop.recipe.Recipe;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,16 +17,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment extends BaseEntity {
+public class Answer extends BaseEntity {
 
-    @Column(length = 512, nullable = false)
+    @Column(length = 2048, nullable = false)
     private String content;
 
     @JoinColumn(name = "member_id")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Member member;
 
-    @JoinColumn(name = "recipe_id")
+    @JoinColumn(name = "question_id")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    private Recipe recipe;
+    private Question question;
 }

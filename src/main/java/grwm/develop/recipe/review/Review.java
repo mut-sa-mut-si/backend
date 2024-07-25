@@ -1,8 +1,8 @@
-package grwm.develop.recipe.comment.reply;
+package grwm.develop.recipe.review;
 
 import grwm.develop.BaseEntity;
 import grwm.develop.member.Member;
-import grwm.develop.recipe.comment.Comment;
+import grwm.develop.recipe.Recipe;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,16 +17,18 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Reply extends BaseEntity {
+public class Review extends BaseEntity {
 
-    @Column(length = 512, nullable = false)
+    @Column(length = 2048, nullable = false)
     private String content;
+
+    private float rating;
 
     @JoinColumn(name = "member_id")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Member member;
 
-    @JoinColumn(name = "comment_id")
+    @JoinColumn(name = "recipe_id")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    private Comment comment;
+    private Recipe recipe;
 }

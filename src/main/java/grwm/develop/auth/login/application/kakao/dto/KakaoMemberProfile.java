@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import grwm.develop.auth.login.application.MemberProfile;
 import grwm.develop.member.Member;
-import grwm.develop.member.Service;
 
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record KakaoMemberProfile(Long id, KakaoAccount kakaoAccount) implements MemberProfile {
@@ -15,13 +14,13 @@ public record KakaoMemberProfile(Long id, KakaoAccount kakaoAccount) implements 
             return Member.builder()
                     .name(kakaoAccount.profile().nickname())
                     .email(id.toString() + "@grwm.com")
-                    .service(Service.KAKAO)
+                    .point(1000)
                     .build();
         } else {
             return Member.builder()
                     .name(kakaoAccount.profile().nickname())
                     .email(kakaoAccount.email())
-                    .service(Service.KAKAO)
+                    .point(1000)
                     .build();
         }
     }
