@@ -2,6 +2,7 @@ package grwm.develop.recipe;
 
 import grwm.develop.auth.security.UserDetailsImpl;
 import grwm.develop.recipe.dto.ReadRecipeRequest;
+import grwm.develop.recipe.dto.ReadRecipeRequestLogin;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,15 @@ public class RecipeController {
     @GetMapping("/{id}/unauthentication")
     public ResponseEntity<ReadRecipeRequest> detailedInqury(@PathVariable("id") Long id)
     {
-        ReadRecipeRequest response = recipeService.findRecipe(id);
-        return ResponseEntity.ok().body(response);
-
+            ReadRecipeRequest response = recipeService.findRecipe(id);
+            return ResponseEntity.ok().body(response);
     }
+    @GetMapping("/{id}/authentication")
+    public ResponseEntity<ReadRecipeRequestLogin> detailedInqury(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                 @PathVariable("id") Long id)
+    {
+        ReadRecipeRequestLogin response = recipeService.findRecipeLogin(userDetails.member(),id);
+        return ResponseEntity.ok().body(response);
+    }
+
 }

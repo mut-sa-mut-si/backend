@@ -25,6 +25,7 @@ public record ReadRecipeRequestLogin(Long id,String title, String content, int r
                 recipeCount,
                 reviewCount,
                 ratingAverage,
+                isClickedScrap,
                 new FindMember(member.getId(), member.getName()),
                 images.stream().map(image ->
                         new FindImage(

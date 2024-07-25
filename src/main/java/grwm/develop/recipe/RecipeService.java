@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
 import grwm.develop.recipe.dto.ReadRecipeRequest;
+import grwm.develop.recipe.dto.ReadRecipeRequestLogin;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
+import grwm.develop.recipe.scrap.ScrapRepository;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +46,7 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final HashtagRepository hashtagRepository;
     private final ReviewRepository reviewRepository;
+    private final ScrapRepository scrapRepository;
 
     @Transactional
     public void writeRecipe(Member member, WriteRecipeRequest request, List<MultipartFile> images) {
@@ -131,7 +134,28 @@ public class RecipeService {
         int recipeCount = recipeRepository.findAllByMember(writer.getId()).size();
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
+
         return  ReadRecipeRequest.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,writer,images,hashtags,reviews);
+    }
+    public ReadRecipeRequestLogin findRecipeLogin(Member member,Long id)
+    {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
+        Member writer = recipe.getMember();
+        List<Review> reviews = reviewRepository.findAllByRecipe(recipe.getId());
+        List<Image> images = imageRepository.findAllByRecipe(recipe.getId());
+        List<Hashtag> hashtags = hashtagRepository.findAllByRecipe(recipe.getId());
+        int recipeCount = recipeRepository.findAllByMember(writer.getId()).size();
+        int reviewCount = reviews.size();
+        float ratingAverage = averageRating(reviews);
+        boolean isClickedScrap;
+        if(scrapRepository.findBymemberId(member.getId()).getRecipe().getId() == recipe.getId())
+        {
+            isClickedScrap = true;
+        }
+        else {
+            isClickedScrap = false;
+        }
+        return  ReadRecipeRequestLogin.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,isClickedScrap,writer,images,hashtags,reviews);
     }
     private float averageRating(List<Review> reviews)
     {
