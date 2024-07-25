@@ -29,7 +29,7 @@ public class ChatController {
 
     @GetMapping("/{id}")
     public ResponseEntity<FindChatRoomResponse> find(@PathVariable(name = "id") Long id,
-                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
+                                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         FindChatRoomResponse response = chatService.findChat(id, userDetails.member());
         return ResponseEntity.ok().body(response);
