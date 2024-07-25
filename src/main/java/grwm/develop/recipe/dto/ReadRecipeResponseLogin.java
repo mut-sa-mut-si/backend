@@ -1,28 +1,30 @@
 package grwm.develop.recipe.dto;
 
 import grwm.develop.member.Member;
-import grwm.develop.recipe.Recipe;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.review.Review;
 
 import java.util.List;
 
-public record ReadRecipeRequest(Long id,String title, String content, int recipeCount, int reviewCount, float ratingAverage,
-                                FindMember member,
-                                List<FindImage> images,
-                                List<FindHashtag> hashtags,
-                                List<FindReview> reviews) {
-    public static ReadRecipeRequest of(Long id, String title, String content, int recipeCount, int reviewCount, float ratingAverage,
-                                Member member,
-                                List<Image> images,
-                                List<Hashtag> hashtags,
-                                List<Review> reviews)
+public record ReadRecipeResponseLogin(Long id, String title, String content, int recipeCount, int reviewCount, float ratingAverage,
+                                      boolean isClickedScrap,
+                                      FindMember member,
+                                      List<FindImage> images,
+                                      List<FindHashtag> hashtags,
+                                      List<FindReview> reviews) {
+    public static ReadRecipeResponseLogin of(Long id, String title, String content, int recipeCount, int reviewCount, float ratingAverage,
+                                             boolean isClickedScrap,
+                                             Member member,
+                                             List<Image> images,
+                                             List<Hashtag> hashtags,
+                                             List<Review> reviews)
     {
-        return new ReadRecipeRequest(id,title,content,
+        return new ReadRecipeResponseLogin(id,title,content,
                 recipeCount,
                 reviewCount,
                 ratingAverage,
+                isClickedScrap,
                 new FindMember(member.getId(), member.getName()),
                 images.stream().map(image ->
                         new FindImage(
