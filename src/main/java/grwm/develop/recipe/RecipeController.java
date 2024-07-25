@@ -1,8 +1,8 @@
 package grwm.develop.recipe;
 
 import grwm.develop.auth.security.UserDetailsImpl;
-import grwm.develop.recipe.dto.ReadRecipeRequest;
-import grwm.develop.recipe.dto.ReadRecipeRequestLogin;
+import grwm.develop.recipe.dto.ReadRecipeResponse;
+import grwm.develop.recipe.dto.ReadRecipeResponseLogin;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,16 +27,16 @@ public class RecipeController {
         return ResponseEntity.ok().body("ok");
     }
     @GetMapping("/{id}/unauthentication")
-    public ResponseEntity<ReadRecipeRequest> detailedInqury(@PathVariable("id") Long id)
+    public ResponseEntity<ReadRecipeResponse> detailedInqury(@PathVariable("id") Long id)
     {
-            ReadRecipeRequest response = recipeService.findRecipe(id);
+            ReadRecipeResponse response = recipeService.findRecipe(id);
             return ResponseEntity.ok().body(response);
     }
     @GetMapping("/{id}/authentication")
-    public ResponseEntity<ReadRecipeRequestLogin> detailedInqury(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                 @PathVariable("id") Long id)
+    public ResponseEntity<ReadRecipeResponseLogin> detailedInqury(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                  @PathVariable("id") Long id)
     {
-        ReadRecipeRequestLogin response = recipeService.findRecipeLogin(userDetails.member(),id);
+        ReadRecipeResponseLogin response = recipeService.findRecipeLogin(userDetails.member(),id);
         return ResponseEntity.ok().body(response);
     }
 

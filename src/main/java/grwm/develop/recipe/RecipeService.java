@@ -5,8 +5,8 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
-import grwm.develop.recipe.dto.ReadRecipeRequest;
-import grwm.develop.recipe.dto.ReadRecipeRequestLogin;
+import grwm.develop.recipe.dto.ReadRecipeResponse;
+import grwm.develop.recipe.dto.ReadRecipeResponseLogin;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
@@ -124,7 +124,7 @@ public class RecipeService {
         return amazonS3Client.getUrl(bucket, fileName).toString();
     }
 
-    public ReadRecipeRequest findRecipe(Long id)
+    public ReadRecipeResponse findRecipe(Long id)
     {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
         Member writer = recipe.getMember();
@@ -135,9 +135,9 @@ public class RecipeService {
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
 
-        return  ReadRecipeRequest.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,writer,images,hashtags,reviews);
+        return  ReadRecipeResponse.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,writer,images,hashtags,reviews);
     }
-    public ReadRecipeRequestLogin findRecipeLogin(Member member,Long id)
+    public ReadRecipeResponseLogin findRecipeLogin(Member member, Long id)
     {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
         Member writer = recipe.getMember();
@@ -155,7 +155,7 @@ public class RecipeService {
         else {
             isClickedScrap = false;
         }
-        return  ReadRecipeRequestLogin.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,isClickedScrap,writer,images,hashtags,reviews);
+        return  ReadRecipeResponseLogin.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,isClickedScrap,writer,images,hashtags,reviews);
     }
     private float averageRating(List<Review> reviews)
     {
