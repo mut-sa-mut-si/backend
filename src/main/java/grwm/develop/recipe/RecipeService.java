@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
+import grwm.develop.recipe.dto.ReadRecipeRequest;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
@@ -16,6 +17,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import grwm.develop.recipe.review.Review;
+import grwm.develop.recipe.review.ReviewRepository;
+import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +43,7 @@ public class RecipeService {
     private final ImageRepository imageRepository;
     private final RecipeRepository recipeRepository;
     private final HashtagRepository hashtagRepository;
+    private final ReviewRepository reviewRepository;
 
     @Transactional
     public void writeRecipe(Member member, WriteRecipeRequest request, List<MultipartFile> images) {
@@ -113,5 +119,27 @@ public class RecipeService {
                         .withCannedAcl(CannedAccessControlList.PublicRead)
         );
         return amazonS3Client.getUrl(bucket, fileName).toString();
+    }
+
+    public ReadRecipeRequest findRecipe(Long id)
+    {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
+        Member writer = recipe.getMember();
+        List<Review> reviews = reviewRepository.findAllByRecipe(recipe.getId());
+        List<Image> images = imageRepository.findAllByRecipe(recipe.getId());
+        List<Hashtag> hashtags = hashtagRepository.findAllByRecipe(recipe.getId());
+        int recipeCount = recipeRepository.findAllByMember(writer.getId()).size();
+        int reviewCount = reviews.size();
+        float ratingAverage = averageRating(reviews);
+        return  ReadRecipeRequest.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,writer,images,hashtags,reviews);
+    }
+    private float averageRating(List<Review> reviews)
+    {
+        float total = 0f;
+        for(Review review : reviews)
+        {
+            total += review.getRating();
+        }
+        return total/(float) reviews.size();
     }
 }
