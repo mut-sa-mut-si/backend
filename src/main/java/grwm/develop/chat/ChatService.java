@@ -2,10 +2,13 @@ package grwm.develop.chat;
 
 import grwm.develop.chat.dto.FindAllChatRoomsResponse;
 import grwm.develop.chat.dto.FindChatRoomResponse;
+import grwm.develop.chat.dto.SendChatDTO;
 import grwm.develop.chat.participant.Participant;
 import grwm.develop.chat.participant.ParticipantRepository;
 import grwm.develop.chat.room.Room;
+import grwm.develop.chat.room.RoomRepository;
 import grwm.develop.member.Member;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ChatService {
 
+    private final RoomRepository roomRepository;
     private final ChatRepository chatRepository;
     private final ParticipantRepository participantRepository;
 
@@ -97,5 +101,32 @@ public class ChatService {
         return chats.stream()
                 .filter(chat -> !chat.getMember().equals(member))
                 .toList();
+    }
+
+    @Transactional
+    public void saveChat(Long roomId, SendChatDTO sendChat, Member member) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        Chat chat = buildChat(sendChat, member, room);
+        chatRepository.save(chat);
+
+        Participant participant = buildParticipant(member, room);
+        participantRepository.save(participant);
+    }
+
+    private Chat buildChat(SendChatDTO sendChat, Member member, Room room) {
+        return Chat.builder()
+                .content(sendChat.message())
+                .member(member)
+                .room(room)
+                .build();
+    }
+
+    private Participant buildParticipant(Member member, Room room) {
+        return Participant.builder()
+                .member(member)
+                .room(room)
+                .build();
     }
 }
