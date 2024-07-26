@@ -6,7 +6,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
 import grwm.develop.member.MemberRepository;
-import grwm.develop.recipe.dto.ReadLockRecipe;
+import grwm.develop.recipe.dto.ReadLockRecipeResponse;
 import grwm.develop.recipe.dto.ReadRecipeResponse;
 import grwm.develop.recipe.dto.ReadRecipeResponseLogin;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
@@ -160,11 +160,11 @@ public class RecipeService {
         }
         return  ReadRecipeResponseLogin.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,isClickedScrap,writer,images,hashtags,reviews);
     }
-    public ReadLockRecipe findRockRecipe(Member member, Long id)
+    public ReadLockRecipeResponse findRockRecipe(Member member, Long id)
     {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
         Member writer = recipe.getMember();
-        return  ReadLockRecipe.of(member.getPoint(),writer);
+        return  ReadLockRecipeResponse.of(member.getPoint(),writer);
     }
     private float averageRating(List<Review> reviews)
     {

@@ -1,7 +1,7 @@
 package grwm.develop.recipe;
 
 import grwm.develop.auth.security.UserDetailsImpl;
-import grwm.develop.recipe.dto.ReadLockRecipe;
+import grwm.develop.recipe.dto.ReadLockRecipeResponse;
 import grwm.develop.recipe.dto.ReadRecipeResponse;
 import grwm.develop.recipe.dto.ReadRecipeResponseLogin;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
@@ -41,11 +41,17 @@ public class RecipeController {
         return ResponseEntity.ok().body(response);
     }
     @GetMapping("/{id}/lock")
-    public ResponseEntity<ReadLockRecipe> detailedInquryLock(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                             @PathVariable("id")Long id)
+    public ResponseEntity<ReadLockRecipeResponse> detailedInquryLock(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                     @PathVariable("id")Long id)
     {
-        ReadLockRecipe response = recipeService.findRockRecipe(userDetails.member(),id);
+        ReadLockRecipeResponse response = recipeService.findRockRecipe(userDetails.member(),id);
         return ResponseEntity.ok().body(response);
+    }
+    @PostMapping("/{id}/reviews")
+    public ResponseEntity writeReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                      @PathVariable("id")Long id)
+    {
+
     }
 
 }
