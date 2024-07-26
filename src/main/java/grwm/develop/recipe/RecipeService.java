@@ -142,10 +142,10 @@ public class RecipeService {
     public ReadRecipeResponse findRecipe(Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
         Member writer = recipe.getMember();
-        List<Review> reviews = reviewRepository.findAllByRecipe(recipe.getId());
-        List<Image> images = imageRepository.findAllByRecipe(recipe.getId());
-        List<Hashtag> hashtags = hashtagRepository.findAllByRecipe(recipe.getId());
-        int recipeCount = recipeRepository.findAllByMember(writer.getId()).size();
+        List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
+        List<Image> images = imageRepository.findAllByRecipeId(recipe.getId());
+        List<Hashtag> hashtags = hashtagRepository.findAllByRecipeId(recipe.getId());
+        int recipeCount = recipeRepository.findAllByMemberId(writer.getId()).size();
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
 
@@ -155,14 +155,14 @@ public class RecipeService {
     public ReadRecipeResponseLogin findRecipeLogin(Member member, Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
         Member writer = recipe.getMember();
-        List<Review> reviews = reviewRepository.findAllByRecipe(recipe.getId());
-        List<Image> images = imageRepository.findAllByRecipe(recipe.getId());
-        List<Hashtag> hashtags = hashtagRepository.findAllByRecipe(recipe.getId());
-        int recipeCount = recipeRepository.findAllByMember(writer.getId()).size();
+        List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
+        List<Image> images = imageRepository.findAllByRecipeId(recipe.getId());
+        List<Hashtag> hashtags = hashtagRepository.findAllByRecipeId(recipe.getId());
+        int recipeCount = recipeRepository.findAllByMemberId(writer.getId()).size();
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
         boolean isClickedScrap;
-        if (scrapRepository.findBymemberId(member.getId()).getRecipe().getId() == recipe.getId()) {
+        if (scrapRepository.findBymemberId(member.getId()).contains(recipe)) {
             isClickedScrap = true;
         } else {
             isClickedScrap = false;
