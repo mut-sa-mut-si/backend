@@ -7,7 +7,8 @@ import grwm.develop.recipe.review.Review;
 
 import java.util.List;
 
-public record ReadRecipeResponse(Long id, String title, String content, int recipeCount, int reviewCount, float ratingAverage,
+public record ReadRecipeResponse(Long id, String title, String content, int recipeCount, int reviewCount,
+                                 float ratingAverage,
                                  FindMember member,
                                  List<FindImage> images,
                                  List<FindHashtag> hashtags,
@@ -16,9 +17,8 @@ public record ReadRecipeResponse(Long id, String title, String content, int reci
                                         Member member,
                                         List<Image> images,
                                         List<Hashtag> hashtags,
-                                        List<Review> reviews)
-    {
-        return new ReadRecipeResponse(id,title,content,
+                                        List<Review> reviews) {
+        return new ReadRecipeResponse(id, title, content,
                 recipeCount,
                 reviewCount,
                 ratingAverage,
@@ -36,20 +36,23 @@ public record ReadRecipeResponse(Long id, String title, String content, int reci
                                 review.getId(),
                                 review.getContent(),
                                 review.getRating(),
-                                new FindMember(review.getMember().getId(),review.getMember().getName()))).toList()
+                                new FindMember(review.getMember().getId(), review.getMember().getName()))).toList()
         );
     }
-    record FindMember(Long id, String name){
+
+    record FindMember(Long id, String name) {
 
     }
-    record FindImage(Long id, String src){
+
+    record FindImage(Long id, String src) {
 
     }
-    record FindHashtag(Long id, String content){
+
+    record FindHashtag(Long id, String content) {
 
     }
-    record FindReview(Long id,String content, float rating, FindMember member)
-    {
+
+    record FindReview(Long id, String content, float rating, FindMember member) {
 
     }
 }
