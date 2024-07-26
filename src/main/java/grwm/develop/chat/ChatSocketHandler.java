@@ -17,7 +17,7 @@ public class ChatSocketHandler {
 
     private final ChatService chatService;
 
-    @MessageMapping("/{roomId}/send")
+    @MessageMapping("/chats/{roomId}/send")
     @SendTo("/chats/{roomId}")
     public ResponseEntity<SendChatDTO> chat(@Payload SendChatDTO chat,
                                             @DestinationVariable Long roomId,
