@@ -1,7 +1,6 @@
 package grwm.develop.recipe;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
@@ -53,14 +52,22 @@ public class RecipeService {
 
     private Recipe buildRecipe(Member member, WriteRecipeRequest request) {
         return Recipe.builder()
-                .category(
-                        Category.valueOf(request.category())
-                )
+                .category(getCategory(request.category()))
                 .title(request.title())
                 .content(request.content())
                 .isPublic(request.isPublic())
                 .member(member)
                 .build();
+    }
+
+    private Category getCategory(String inputCategory) {
+        if (inputCategory.equals("피부미용")) {
+            return Category.SKIN;
+        }
+        if (inputCategory.equals("헬스")) {
+            return Category.HEALTH;
+        }
+        return Category.NUTRIENTS;
     }
 
     private List<Hashtag> buildHashtags(WriteRecipeRequest request, Recipe recipe) {
@@ -110,7 +117,6 @@ public class RecipeService {
         String fileName = IMAGE_SAVE_PATH_PREFIX + file.getName();
         amazonS3Client.putObject(
                 new PutObjectRequest(bucket, fileName, file)
-                        .withCannedAcl(CannedAccessControlList.PublicRead)
         );
         return amazonS3Client.getUrl(bucket, fileName).toString();
     }
