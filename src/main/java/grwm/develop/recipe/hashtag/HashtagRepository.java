@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
 
-    List<Hashtag> findAllByRecipe(Long recipeId);
+    List<Hashtag> findAllByRecipeId(Long recipeId);
 }
