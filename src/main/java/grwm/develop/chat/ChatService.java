@@ -83,7 +83,7 @@ public class ChatService {
         List<Chat> myChats = getMyChats(member, chats);
         List<Chat> otherChats = getOtherChats(member, chats);
         return FindChatRoomResponse.of(
-                Objects.requireNonNull(other), myChats, otherChats);
+                roomId, member, Objects.requireNonNull(other), myChats, otherChats);
     }
 
     private Member getOtherMember(Member member, List<Participant> participants) {
