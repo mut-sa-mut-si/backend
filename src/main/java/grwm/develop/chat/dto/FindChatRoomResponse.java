@@ -6,15 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public record FindChatRoomResponse(MemberDTO member, List<ChatDTO> chats) {
+public record FindChatRoomResponse(Long roomId, MemberDTO meMember, MemberDTO otherMember, List<ChatDTO> chats) {
 
-    public static FindChatRoomResponse of(Member member, List<Chat> myChats, List<Chat> otherChats) {
+    public static FindChatRoomResponse of(Long roomId, Member me, Member other, List<Chat> myChats, List<Chat> otherChats) {
         List<ChatDTO> totalChats = new ArrayList<>();
         addMyChats(myChats, totalChats);
         addOtherChats(otherChats, totalChats);
         totalChats.sort((chat1, chat2) -> chat2.createdAt.compareTo(chat1.createdAt));
         return new FindChatRoomResponse(
-                new MemberDTO(member.getId(), member.getName()), totalChats);
+                roomId,
+                new MemberDTO(me.getId(), me.getName()),
+                new MemberDTO(other.getId(), other.getName()),
+                totalChats);
     }
 
     private static void addMyChats(List<Chat> myChats, List<ChatDTO> totalChats) {
