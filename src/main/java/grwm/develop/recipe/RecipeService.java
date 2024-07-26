@@ -5,15 +5,12 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
-import grwm.develop.member.MemberRepository;
-import grwm.develop.recipe.dto.ReadLockRecipeResponse;
-import grwm.develop.recipe.dto.ReadRecipeResponse;
-import grwm.develop.recipe.dto.ReadRecipeResponseLogin;
-import grwm.develop.recipe.dto.WriteRecipeRequest;
+import grwm.develop.recipe.dto.*;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
 import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,7 +46,6 @@ public class RecipeService {
     private final HashtagRepository hashtagRepository;
     private final ReviewRepository reviewRepository;
     private final ScrapRepository scrapRepository;
-    private final MemberRepository memberRepository;
 
     @Transactional
     public void writeRecipe(Member member, WriteRecipeRequest request, List<MultipartFile> images) {
@@ -61,6 +57,13 @@ public class RecipeService {
 
         List<Image> uploadedImages = getUploadedImages(images, recipe);
         imageRepository.saveAll(uploadedImages);
+    }
+
+    @Transactional
+    public void writeReview(Member member, WriteReviewRequest writeReviewRequest, Long id) {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
+        Review review = buildReview(member, writeReviewRequest, recipe);
+        reviewRepository.save(review);
     }
 
     private Recipe buildRecipe(Member member, WriteRecipeRequest request) {
@@ -84,6 +87,15 @@ public class RecipeService {
                                 .build()
                 )
                 .toList();
+    }
+
+    public Review buildReview(Member member, WriteReviewRequest writeReviewRequest, Recipe recipe) {
+        return Review.builder()
+                .content(writeReviewRequest.content())
+                .rating(writeReviewRequest.rating())
+                .member(member)
+                .recipe(recipe)
+                .build();
     }
 
     private List<Image> getUploadedImages(List<MultipartFile> images, Recipe recipe) {
@@ -127,8 +139,7 @@ public class RecipeService {
         return amazonS3Client.getUrl(bucket, fileName).toString();
     }
 
-    public ReadRecipeResponse findRecipe(Long id)
-    {
+    public ReadRecipeResponse findRecipe(Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
         Member writer = recipe.getMember();
         List<Review> reviews = reviewRepository.findAllByRecipe(recipe.getId());
@@ -138,10 +149,10 @@ public class RecipeService {
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
 
-        return  ReadRecipeResponse.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,writer,images,hashtags,reviews);
+        return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, writer, images, hashtags, reviews);
     }
-    public ReadRecipeResponseLogin findRecipeLogin(Member member, Long id)
-    {
+
+    public ReadRecipeResponseLogin findRecipeLogin(Member member, Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
         Member writer = recipe.getMember();
         List<Review> reviews = reviewRepository.findAllByRecipe(recipe.getId());
@@ -151,28 +162,25 @@ public class RecipeService {
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
         boolean isClickedScrap;
-        if(scrapRepository.findBymemberId(member.getId()).getRecipe().getId() == recipe.getId())
-        {
+        if (scrapRepository.findBymemberId(member.getId()).getRecipe().getId() == recipe.getId()) {
             isClickedScrap = true;
-        }
-        else {
+        } else {
             isClickedScrap = false;
         }
-        return  ReadRecipeResponseLogin.of(recipe.getId(),recipe.getTitle(),recipe.getContent(),recipeCount,reviewCount,ratingAverage,isClickedScrap,writer,images,hashtags,reviews);
+        return ReadRecipeResponseLogin.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, isClickedScrap, writer, images, hashtags, reviews);
     }
-    public ReadLockRecipeResponse findRockRecipe(Member member, Long id)
-    {
+
+    public ReadLockRecipeResponse findRockRecipe(Member member, Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityExistsException::new);
         Member writer = recipe.getMember();
-        return  ReadLockRecipeResponse.of(member.getPoint(),writer);
+        return ReadLockRecipeResponse.of(member.getPoint(), writer);
     }
-    private float averageRating(List<Review> reviews)
-    {
+
+    private float averageRating(List<Review> reviews) {
         float total = 0f;
-        for(Review review : reviews)
-        {
+        for (Review review : reviews) {
             total += review.getRating();
         }
-        return total/(float) reviews.size();
+        return total / (float) reviews.size();
     }
 }

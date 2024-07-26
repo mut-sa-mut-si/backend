@@ -2,11 +2,11 @@ package grwm.develop.recipe.dto;
 
 import grwm.develop.member.Member;
 
-public record ReadLockRecipe(int point, FindMember member) {
+public record ReadLockRecipeResponse(int point, FindMember member) {
 
-    static public ReadLockRecipe of(int point, Member member)
+    static public ReadLockRecipeResponse of(int point, Member member)
     {
-        return new ReadLockRecipe(point,
+        return new ReadLockRecipeResponse(point,
                 new FindMember(member.getId(),member.getName()));
     }
 
