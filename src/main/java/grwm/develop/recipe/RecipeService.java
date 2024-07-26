@@ -5,6 +5,8 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
+import grwm.develop.member.MemberRepository;
+import grwm.develop.recipe.dto.RecipeListResponse;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
@@ -16,6 +18,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import grwm.develop.recipe.review.Review;
+import grwm.develop.recipe.review.ReviewRepository;
+import grwm.develop.subscribe.Subscribe;
+import grwm.develop.subscribe.SubscribeItem;
+import grwm.develop.subscribe.SubscribeItemRepository;
+import grwm.develop.subscribe.SubscribeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +48,10 @@ public class RecipeService {
     private final ImageRepository imageRepository;
     private final RecipeRepository recipeRepository;
     private final HashtagRepository hashtagRepository;
-
+    private final ReviewRepository reviewRepository;
+    private final SubscribeItemRepository subscribeItemRepository;
+    private final SubscribeRepository subscribeRepository;
+    private final MemberRepository memberRepository;
     @Transactional
     public void writeRecipe(Member member, WriteRecipeRequest request, List<MultipartFile> images) {
         Recipe recipe = buildRecipe(member, request);
@@ -114,4 +127,69 @@ public class RecipeService {
         );
         return amazonS3Client.getUrl(bucket, fileName).toString();
     }
+    public RecipeListResponse findRecipeList(String category)
+    {
+        List<Recipe> recipes = recipeRepository.findAllByCategory(category);
+        RecipeListResponse recipeListResponse = new RecipeListResponse();
+        int num = 1;
+        for(Recipe recipe : recipes)
+        {
+            List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
+            RecipeListResponse.FindRecipe findRecipe =
+                    new RecipeListResponse.FindRecipe(
+                            num,
+                            reviews.size(),
+                            averageRating(reviews),
+                            new RecipeListResponse.RecipeDetail(
+                                    recipe.getId(),
+                                    recipe.getTitle(),
+                                    imageRepository.findByRecipeId(recipe.getId()).getUrl(),
+                                    recipe.isPublic()),
+                            new RecipeListResponse.MemberDetail(
+                                    recipe.getMember().getId(),
+                                    recipe.getMember().getName()
+                            ));
+            recipeListResponse.plus(findRecipe);
+        }
+        return recipeListResponse;
+    }
+    public RecipeListResponse findRecipeListLogin(Member member,String category)
+    {
+        RecipeListResponse recipeListResponse = findRecipeList(category);
+        for(RecipeListResponse.FindRecipe findRecipe: recipeListResponse.getRecipes() )
+        {
+            Member writer = memberRepository.findById(findRecipe.getMember().getId()).
+                    orElseThrow(EntityNotFoundException::new);
+            if(findRecipe.getRecipe().isPublic() == false &&
+                    isSubscribe(member,writer))
+            {
+                findRecipe.getRecipe().setPublic(true);
+            }
+        }
+        return recipeListResponse;
+    }
+    private float averageRating(List<Review> reviews)
+    {
+        float total = 0f;
+        for(Review review : reviews)
+        {
+            total += review.getRating();
+        }
+        return total/(float) reviews.size();
+    }
+    boolean isSubscribe(Member member,Member writer)
+    {
+        SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(writer.getId());
+        List<Subscribe> subscribes = subscribeRepository.findAllByMemberId(member.getId());
+        for(Subscribe subscribe : subscribes)
+        {
+            if(subscribe.getSubscribeItem().equals(subscribeItem))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }
