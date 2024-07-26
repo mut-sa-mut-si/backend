@@ -1,5 +1,6 @@
 package grwm.develop.chat;
 
+import grwm.develop.Category;
 import grwm.develop.chat.dto.FindAllChatRoomsResponse;
 import grwm.develop.chat.dto.FindChatRoomResponse;
 import grwm.develop.chat.dto.SendChatDTO;
@@ -8,6 +9,7 @@ import grwm.develop.chat.participant.ParticipantRepository;
 import grwm.develop.chat.room.Room;
 import grwm.develop.chat.room.RoomRepository;
 import grwm.develop.member.Member;
+import grwm.develop.member.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +26,7 @@ public class ChatService {
 
     private final RoomRepository roomRepository;
     private final ChatRepository chatRepository;
+    private final MemberRepository memberRepository;
     private final ParticipantRepository participantRepository;
 
     public FindAllChatRoomsResponse findAllChats(String category, Member member) {
@@ -110,9 +113,6 @@ public class ChatService {
 
         Chat chat = buildChat(sendChat, member, room);
         chatRepository.save(chat);
-
-        Participant participant = buildParticipant(member, room);
-        participantRepository.save(participant);
     }
 
     private Chat buildChat(SendChatDTO sendChat, Member member, Room room) {
@@ -121,6 +121,37 @@ public class ChatService {
                 .member(member)
                 .room(room)
                 .build();
+    }
+
+    @Transactional
+    public void participateChat(Long otherMemberId, Member member, String category) {
+        Room room = buildRoom(category);
+        roomRepository.save(room);
+
+        Participant me = buildParticipant(member, room);
+
+        Member otherMember = memberRepository.findById(otherMemberId)
+                .orElseThrow(EntityNotFoundException::new);
+        Participant other = buildParticipant(otherMember, room);
+
+        List<Participant> participants = List.of(me, other);
+        participantRepository.saveAll(participants);
+    }
+
+    private Room buildRoom(String category) {
+        return Room.builder()
+                .category(getCategory(category))
+                .build();
+    }
+
+    public Category getCategory(String category) {
+        if (category.equals("SKIN")) {
+            return Category.SKIN;
+        }
+        if (category.equals("HEALTH")) {
+            return Category.HEALTH;
+        }
+        return Category.NUTRIENTS;
     }
 
     private Participant buildParticipant(Member member, Room room) {
