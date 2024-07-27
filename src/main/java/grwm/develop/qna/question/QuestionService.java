@@ -7,8 +7,12 @@ import grwm.develop.qna.answer.AnswerRepository;
 import grwm.develop.qna.dto.QuestionDetailResponse;
 import grwm.develop.qna.dto.QuestionDetailResponse.AnswerDetail;
 import grwm.develop.qna.dto.QuestionMainResponse;
+import grwm.develop.qna.question.dto.SearchQuestionRequest;
+import grwm.develop.qna.question.dto.SearchQuestionResponse;
+import grwm.develop.qna.question.dto.SearchQuestionResponse.SearchQuestion;
 import grwm.develop.qna.question.dto.WriteQuestionRequest;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -108,5 +112,26 @@ public class QuestionService {
                         answer.getContent(),
                         answer.getMember()))
                 .toList();
+    }
+
+    public SearchQuestionResponse searchQuestions(SearchQuestionRequest request) {
+        List<Question> contentMatches = questionRepository.searchQuestionsByContent(request.keyword());
+        List<Question> titleMatches = questionRepository.searchQuestionsByTitle(request.keyword());
+
+        List<SearchQuestion> questions = getSearchQuestions(contentMatches, titleMatches);
+
+        return new SearchQuestionResponse(request.keyword(), questions);
+    }
+
+    private static List<SearchQuestion> getSearchQuestions(List<Question> contentMatches, List<Question> titleMatches) {
+        List<SearchQuestion> questions = new ArrayList<>();
+        questions.addAll(contentMatches.stream()
+                .map(q -> new SearchQuestion(q.getId(), new SearchQuestionResponse.Question(q.getId(), q.getTitle(), q.getContent())))
+                .toList());
+        questions.addAll(titleMatches.stream()
+                .filter(q -> !contentMatches.contains(q))
+                .map(q -> new SearchQuestion(q.getId(), new SearchQuestionResponse.Question(q.getId(), q.getTitle(), q.getContent())))
+                .toList());
+        return questions;
     }
 }

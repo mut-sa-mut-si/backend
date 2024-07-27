@@ -3,6 +3,8 @@ package grwm.develop.qna.question;
 import grwm.develop.auth.security.UserDetailsImpl;
 import grwm.develop.qna.dto.QuestionDetailResponse;
 import grwm.develop.qna.dto.QuestionMainResponse;
+import grwm.develop.qna.question.dto.SearchQuestionRequest;
+import grwm.develop.qna.question.dto.SearchQuestionResponse;
 import grwm.develop.qna.question.dto.WriteQuestionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -43,4 +45,9 @@ public class QuestionController {
         return ResponseEntity.ok().body(response);
     }
 
+    @GetMapping("/search")
+    public SearchQuestionResponse searchQuestions(@RequestParam("keyword") String keyword) {
+        SearchQuestionRequest request = new SearchQuestionRequest(keyword);
+        return questionService.searchQuestions(request);
+    }
 }
