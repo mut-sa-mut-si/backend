@@ -1,8 +1,12 @@
 package grwm.develop.qna.question;
 
+import grwm.develop.Category;
+import grwm.develop.member.Member;
 import grwm.develop.qna.answer.Answer;
 import grwm.develop.qna.answer.AnswerRepository;
 import grwm.develop.qna.dto.QuestionMainResponse;
+import grwm.develop.qna.question.dto.WriteQuestionRequest;
+import jakarta.transaction.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -60,5 +64,22 @@ public class QuestionService {
                         new QuestionMainResponse.Writer(question.getMember().getId(), question.getMember().getName())
                 ))
                 .toList();
+    }
+
+    @Transactional
+    public void writeQuestion(Member member, WriteQuestionRequest request) {
+        Question question = buildQuestion(member, request);
+        questionRepository.save(question);
+    }
+
+    private Question buildQuestion(Member member, WriteQuestionRequest request) {
+        return Question.builder()
+                .title(request.title())
+                .content(request.content())
+                .member(member)
+                .category(
+                        Category.valueOf(request.category())
+                )
+                .build();
     }
 }
