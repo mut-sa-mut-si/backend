@@ -1,6 +1,7 @@
 package grwm.develop.recipe;
 
 import grwm.develop.auth.security.UserDetailsImpl;
+import grwm.develop.recipe.dto.SearchPageResponse;
 import grwm.develop.recipe.dto.SearchRecipe;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,10 @@ public class SearchController {
 
     SearchService searchService;
     @GetMapping
-    public ResponseEntity<String> searchPage()
+    public ResponseEntity<SearchPageResponse> searchPage()
     {
-        return ResponseEntity.ok().body("굿");
+        SearchPageResponse response = searchService.searchPage();
+        return ResponseEntity.ok().body(response);
     }
     @GetMapping("/unauthentication")
     public ResponseEntity<SearchRecipe> searchRecipe(@RequestParam("keyword") String keyword)
