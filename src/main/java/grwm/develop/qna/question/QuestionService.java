@@ -4,6 +4,8 @@ import grwm.develop.Category;
 import grwm.develop.member.Member;
 import grwm.develop.qna.answer.Answer;
 import grwm.develop.qna.answer.AnswerRepository;
+import grwm.develop.qna.dto.QuestionDetailResponse;
+import grwm.develop.qna.dto.QuestionDetailResponse.AnswerDetail;
 import grwm.develop.qna.dto.QuestionMainResponse;
 import grwm.develop.qna.question.dto.WriteQuestionRequest;
 import jakarta.transaction.Transactional;
@@ -81,5 +83,30 @@ public class QuestionService {
                         Category.valueOf(request.category())
                 )
                 .build();
+    }
+
+    public QuestionDetailResponse readQuestion(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
+
+        List<Answer> answers = answerRepository.findAllByQuestion(question);
+        List<AnswerDetail> answerDetails = getAnswerDetails(answers);
+
+        return new QuestionDetailResponse(
+                question.getId(),
+                question.getTitle(),
+                question.getContent(),
+                question.getMember(),
+                answerDetails
+        );
+    }
+
+    private static List<AnswerDetail> getAnswerDetails(List<Answer> answers) {
+        return answers.stream()
+                .map(answer -> new AnswerDetail(
+                        answer.getId(),
+                        answer.getContent(),
+                        answer.getMember()))
+                .toList();
     }
 }
