@@ -1,6 +1,7 @@
 package grwm.develop.qna.answer;
 
 import grwm.develop.member.Member;
+import grwm.develop.member.MemberService;
 import grwm.develop.qna.answer.dto.WriteAnswerRequest;
 import grwm.develop.qna.question.Question;
 import grwm.develop.qna.question.QuestionRepository;
@@ -13,8 +14,10 @@ public class AnswerService {
 
     private final AnswerRepository answerRepository;
     private final QuestionRepository questionRepository;
+    private final MemberService memberService;
 
     public void writeAnswer(Long questionId, Member member, WriteAnswerRequest request) {
+        memberService.addPoints(member.getId(), 50);
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
         Answer answer = buildAnswer(member, request, question);
