@@ -29,22 +29,20 @@ public class SearchService {
     SubscribeRepository subscribeRepository;
     HashtagRepository hashtagRepository;
 
-    public SearchPageResponse searchPage()
-    {
+    public SearchPageResponse searchPage() {
         List<Hashtag> hashtags = hashtagRepository.findAll();
         Map<String, List<Hashtag>> groupHashtags = groupHashtagsByContent(hashtags);
         List<String> popularKeyword = groupHashtags.keySet().stream().toList();
         SearchPageResponse searchPageResponse = new SearchPageResponse();
         Long num = 1L;
-        for(String keyword : popularKeyword)
-        {
-            SearchPageResponse.findPopularKeyword findPopularKeyword= new SearchPageResponse.findPopularKeyword(num, keyword);
+        for (String keyword : popularKeyword) {
+            SearchPageResponse.findPopularKeyword findPopularKeyword = new SearchPageResponse.findPopularKeyword(num, keyword);
             searchPageResponse.Plus(findPopularKeyword);
         }
         return searchPageResponse;
     }
-    public Map<String, List<Hashtag>> groupHashtagsByContent(List<Hashtag> hashtags)
-    {
+
+    public Map<String, List<Hashtag>> groupHashtagsByContent(List<Hashtag> hashtags) {
         return hashtags.stream().collect(Collectors.groupingBy(Hashtag::getContent))
                 .entrySet().stream().sorted((entry1, entry2) ->
                         Integer.compare(entry2.getValue().size(),
@@ -53,16 +51,17 @@ public class SearchService {
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
-                        (e1,e2) ->e1,
+                        (e1, e2) -> e1,
                         LinkedHashMap::new
                 ));
     }
+
     public SearchRecipe searchRecipe(String keyword) {
         List<Recipe> recipesContent = recipeRepository.findByContentContaining(keyword);
         List<Recipe> recipesTitle = recipeRepository.findByTitleContaining(keyword);
         List<Recipe> recipesHashtag = new ArrayList<>();
         List<Hashtag> hashtags = hashtagRepository.findByContentContaining(keyword);
-        List<Recipe>recipes = integrateRecipe(recipesContent, recipesTitle, recipesHashtag);
+        List<Recipe> recipes = integrateRecipe(recipesContent, recipesTitle, recipesHashtag);
         for (Hashtag hashtag : hashtags) {
             Recipe recipe = hashtag.getRecipe();
             recipesHashtag.add(recipe);

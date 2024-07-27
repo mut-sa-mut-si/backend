@@ -5,23 +5,23 @@ import grwm.develop.recipe.hashtag.Hashtag;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchPageResponse{
+public class SearchPageResponse {
 
     List<findPopularKeyword> popularKewords;
-    public SearchPageResponse()
-    {
+
+    public SearchPageResponse() {
         popularKewords = new ArrayList<>();
     }
-    public void Plus(findPopularKeyword findPopularKeyword)
-    {
+
+    public void Plus(findPopularKeyword findPopularKeyword) {
         popularKewords.add(findPopularKeyword);
     }
 
     public static class findPopularKeyword {
         Long id;
         String keword;
-        public findPopularKeyword(Long id, String keyword)
-        {
+
+        public findPopularKeyword(Long id, String keyword) {
             this.id = id;
             this.keword = keyword;
         }

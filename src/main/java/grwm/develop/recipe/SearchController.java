@@ -17,23 +17,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class SearchController {
 
     SearchService searchService;
+
     @GetMapping
-    public ResponseEntity<SearchPageResponse> searchPage()
-    {
+    public ResponseEntity<SearchPageResponse> searchPage() {
         SearchPageResponse response = searchService.searchPage();
         return ResponseEntity.ok().body(response);
     }
+
     @GetMapping("/unauthentication")
-    public ResponseEntity<SearchRecipe> searchRecipe(@RequestParam("keyword") String keyword)
-    {
+    public ResponseEntity<SearchRecipe> searchRecipe(@RequestParam("keyword") String keyword) {
         SearchRecipe response = searchService.searchRecipe(keyword);
         return ResponseEntity.ok().body(response);
     }
+
     @GetMapping("/authentication")
     public ResponseEntity<SearchRecipe> searchRecipe(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                     @RequestParam("keyword")String keyword)
-    {
-        SearchRecipe response = searchService.searchRecipeLogin(userDetails.member(),keyword);
+                                                     @RequestParam("keyword") String keyword) {
+        SearchRecipe response = searchService.searchRecipeLogin(userDetails.member(), keyword);
         return ResponseEntity.ok().body(response);
     }
 }
