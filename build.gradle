@@ -27,16 +27,6 @@ ext {
     set('springCloudVersion', "2023.0.2")
 }
 
-jar {
-    manifest {
-        attributes(
-                'Manifest-Version': '1.0',
-                'Main-Class': 'grwm.develop.Application',
-                'Create-By': '17.0.2 (OpenJdk)'
-        )
-    }
-}
-
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
@@ -44,6 +34,9 @@ dependencies {
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // Web Socket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'

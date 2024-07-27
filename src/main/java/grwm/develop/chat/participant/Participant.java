@@ -1,9 +1,8 @@
-package grwm.develop.chat;
+package grwm.develop.chat.participant;
 
 import grwm.develop.BaseEntity;
 import grwm.develop.chat.room.Room;
 import grwm.develop.member.Member;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -11,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,10 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class Chat extends BaseEntity {
-
-    @Column(length = 512, nullable = false)
-    private String content;
+public class Participant extends BaseEntity {
 
     @JoinColumn(name = "member_id")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
