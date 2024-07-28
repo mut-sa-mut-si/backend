@@ -16,9 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,47 +33,34 @@ public class ChatService {
 
     public FindAllChatRoomsResponse findAllChats(String category, Member member) {
         List<Participant> participants = participantRepository.findByMemberId(member.getId());
-
+        List<Room> rooms = getRooms(category, participants);
         Map<Long, String> messageMap = new HashMap<>();
         Map<Long, Member> memberMap = new HashMap<>();
-
-        List<Room> rooms = getRooms(category, member, participants, messageMap, memberMap);
+        setMessageAndMemberMap(member, rooms, messageMap, memberMap);
         return FindAllChatRoomsResponse.of(rooms, messageMap, memberMap);
     }
 
-    private List<Room> getRooms(String category,
-                                Member member,
-                                List<Participant> participants,
-                                Map<Long, String> messageMap,
-                                Map<Long, Member> memberMap) {
-
+    private List<Room> getRooms(String category, List<Participant> participants) {
         return participants.stream()
                 .map(Participant::getRoom)
                 .filter(room -> room.getCategory().toString().equals(category))
-                .distinct()
-                .peek(room -> mappedLastMessage(room, messageMap))
-                .peek(room -> mappedOppositeMember(room, member, memberMap, participants))
                 .toList();
     }
 
-    private void mappedLastMessage(Room room, Map<Long, String> messageMap) {
-        List<Chat> chats = chatRepository.findByRoomId(room.getId());
-        if (!chats.isEmpty()) {
-            messageMap.put(room.getId(), chats.get(chats.size() - 1).getContent());
-        }
-    }
+    private void setMessageAndMemberMap(Member member, List<Room> rooms,
+                                        Map<Long, String> messageMap,
+                                        Map<Long, Member> memberMap) {
 
-    private void mappedOppositeMember(Room room,
-                                      Member member,
-                                      Map<Long, Member> memberMap,
-                                      List<Participant> participants) {
-
-        Member oppositeMember = participants.stream()
-                .map(Participant::getMember)
-                .filter(participantMember -> !participantMember.equals(member))
-                .findFirst()
-                .orElse(null);
-        memberMap.put(room.getId(), oppositeMember);
+        rooms.forEach(room -> {
+            Long roomId = room.getId();
+            List<Chat> chats = chatRepository.findByRoomId(roomId);
+            if (!chats.isEmpty()) {
+                messageMap.put(roomId, chats.get(chats.size() - 1).getContent());
+            }
+            List<Participant> findParticipants = participantRepository.findByRoomId(roomId);
+            Member findMember = getOtherMember(member, findParticipants);
+            memberMap.put(roomId, findMember);
+        });
     }
 
     public FindChatRoomResponse findChat(Long roomId, Member member) {
@@ -88,7 +77,11 @@ public class ChatService {
 
     private Member getOtherMember(Member member, List<Participant> participants) {
         return participants.stream()
-                .filter(participant -> !participant.getMember().equals(member))
+                .filter(participant ->
+                        !participant.getMember()
+                                .getEmail()
+                                .equals(member.getEmail())
+                )
                 .findFirst()
                 .map(Participant::getMember)
                 .orElse(null);
