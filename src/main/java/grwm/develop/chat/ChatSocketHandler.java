@@ -1,16 +1,16 @@
 package grwm.develop.chat;
 
-import grwm.develop.auth.security.UserDetailsImpl;
 import grwm.develop.chat.dto.SendChatDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class ChatSocketHandler {
@@ -19,11 +19,10 @@ public class ChatSocketHandler {
 
     @MessageMapping("/chats/{roomId}/send")
     @SendTo("/chats/{roomId}")
-    public ResponseEntity<SendChatDTO> chat(@Payload SendChatDTO chat,
-                                            @DestinationVariable Long roomId,
-                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<SendChatDTO> chat(@RequestBody SendChatDTO chat,
+                                            @DestinationVariable Long roomId) {
 
-        chatService.saveChat(roomId, chat, userDetails.member());
+        chatService.saveChat(roomId, chat, chat.memberId());
         return ResponseEntity.ok().body(chat);
     }
 }
