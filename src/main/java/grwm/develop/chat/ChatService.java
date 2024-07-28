@@ -34,6 +34,7 @@ public class ChatService {
     public FindAllChatRoomsResponse findAllChats(String category, Member member) {
         List<Participant> participants = participantRepository.findByMemberId(member.getId());
         List<Room> rooms = getRooms(category, participants);
+        
         Map<Long, String> messageMap = new HashMap<>();
         Map<Long, Member> memberMap = new HashMap<>();
         setMessageAndMemberMap(member, rooms, messageMap, memberMap);
@@ -89,19 +90,28 @@ public class ChatService {
 
     private List<Chat> getMyChats(Member member, List<Chat> chats) {
         return chats.stream()
-                .filter(chat -> chat.getMember().equals(member))
+                .filter(chat ->
+                        chat.getMember()
+                                .getEmail()
+                                .equals(member.getEmail()))
                 .toList();
     }
 
     private List<Chat> getOtherChats(Member member, List<Chat> chats) {
         return chats.stream()
-                .filter(chat -> !chat.getMember().equals(member))
+                .filter(chat ->
+                        !chat.getMember()
+                                .getEmail()
+                                .equals(member.getEmail())
+                )
                 .toList();
     }
 
     @Transactional
-    public void saveChat(Long roomId, SendChatDTO sendChat, Member member) {
+    public void saveChat(Long roomId, SendChatDTO sendChat, Long memberId) {
         Room room = roomRepository.findById(roomId)
+                .orElseThrow(EntityNotFoundException::new);
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(EntityNotFoundException::new);
 
         Chat chat = buildChat(sendChat, member, room);
