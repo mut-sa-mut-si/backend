@@ -3,6 +3,7 @@ package grwm.develop.chat.dto;
 import grwm.develop.chat.Chat;
 import grwm.develop.member.Member;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -12,7 +13,7 @@ public record FindChatRoomResponse(Long roomId, MemberDTO meMember, MemberDTO ot
         List<ChatDTO> totalChats = new ArrayList<>();
         addMyChats(myChats, totalChats);
         addOtherChats(otherChats, totalChats);
-        totalChats.sort((chat1, chat2) -> chat2.createdAt.compareTo(chat1.createdAt));
+        totalChats.sort(Comparator.comparing(chat -> chat.createdAt));
         return new FindChatRoomResponse(
                 roomId,
                 new MemberDTO(me.getId(), me.getName()),
