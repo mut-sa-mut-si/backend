@@ -1,7 +1,6 @@
 package grwm.develop.recipe;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
@@ -12,13 +11,6 @@ import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
 import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
 import grwm.develop.subscribe.Subscribe;
@@ -26,6 +18,12 @@ import grwm.develop.subscribe.SubscribeItem;
 import grwm.develop.subscribe.SubscribeItemRepository;
 import grwm.develop.subscribe.SubscribeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,6 +50,7 @@ public class RecipeService {
     private final SubscribeItemRepository subscribeItemRepository;
     private final SubscribeRepository subscribeRepository;
     private final MemberRepository memberRepository;
+
     @Transactional
     public void writeRecipe(Member member, WriteRecipeRequest request, List<MultipartFile> images) {
         Recipe recipe = buildRecipe(member, request);
@@ -123,21 +122,17 @@ public class RecipeService {
         String fileName = IMAGE_SAVE_PATH_PREFIX + file.getName();
         amazonS3Client.putObject(
                 new PutObjectRequest(bucket, fileName, file)
-                        .withCannedAcl(CannedAccessControlList.PublicRead)
         );
         return amazonS3Client.getUrl(bucket, fileName).toString();
     }
-    public RecipeListResponse findRecipeList(String category)
-    {
+
+    public RecipeListResponse findRecipeList(String category) {
         List<Recipe> recipes = recipeRepository.findAllByCategory(category);
         RecipeListResponse recipeListResponse = new RecipeListResponse();
-        int num = 1;
-        for(Recipe recipe : recipes)
-        {
+        for (Recipe recipe : recipes) {
             List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
             RecipeListResponse.FindRecipe findRecipe =
                     new RecipeListResponse.FindRecipe(
-                            num,
                             reviews.size(),
                             averageRating(reviews),
                             new RecipeListResponse.RecipeDetail(
@@ -153,43 +148,35 @@ public class RecipeService {
         }
         return recipeListResponse;
     }
-    public RecipeListResponse findRecipeListLogin(Member member,String category)
-    {
+
+    public RecipeListResponse findRecipeListLogin(Member member, String category) {
         RecipeListResponse recipeListResponse = findRecipeList(category);
-        for(RecipeListResponse.FindRecipe findRecipe: recipeListResponse.getRecipes() )
-        {
+        for (RecipeListResponse.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
             Member writer = memberRepository.findById(findRecipe.getMember().getId()).
                     orElseThrow(EntityNotFoundException::new);
-            if(findRecipe.getRecipe().isPublic() == false &&
-                    isSubscribe(member,writer))
-            {
+            if (!findRecipe.getRecipe().isPublic() && isSubscribe(member, writer)) {
                 findRecipe.getRecipe().setPublic(true);
             }
         }
         return recipeListResponse;
     }
-    private float averageRating(List<Review> reviews)
-    {
+
+    private float averageRating(List<Review> reviews) {
         float total = 0f;
-        for(Review review : reviews)
-        {
+        for (Review review : reviews) {
             total += review.getRating();
         }
-        return total/(float) reviews.size();
+        return total / (float) reviews.size();
     }
-    boolean isSubscribe(Member member,Member writer)
-    {
+
+    boolean isSubscribe(Member member, Member writer) {
         SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(writer.getId());
         List<Subscribe> subscribes = subscribeRepository.findAllByMemberId(member.getId());
-        for(Subscribe subscribe : subscribes)
-        {
-            if(subscribe.getSubscribeItem().equals(subscribeItem))
-            {
+        for (Subscribe subscribe : subscribes) {
+            if (subscribe.getSubscribeItem().equals(subscribeItem)) {
                 return true;
             }
         }
         return false;
     }
-
-
 }
