@@ -16,11 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -34,7 +32,7 @@ public class ChatService {
     public FindAllChatRoomsResponse findAllChats(String category, Member member) {
         List<Participant> participants = participantRepository.findByMemberId(member.getId());
         List<Room> rooms = getRooms(category, participants);
-        
+
         Map<Long, String> messageMap = new HashMap<>();
         Map<Long, Member> memberMap = new HashMap<>();
         setMessageAndMemberMap(member, rooms, messageMap, memberMap);
@@ -44,7 +42,10 @@ public class ChatService {
     private List<Room> getRooms(String category, List<Participant> participants) {
         return participants.stream()
                 .map(Participant::getRoom)
-                .filter(room -> room.getCategory().toString().equals(category))
+                .filter(room ->
+                        room.getCategory()
+                                .toString()
+                                .equals(category))
                 .toList();
     }
 
@@ -56,7 +57,11 @@ public class ChatService {
             Long roomId = room.getId();
             List<Chat> chats = chatRepository.findByRoomId(roomId);
             if (!chats.isEmpty()) {
-                messageMap.put(roomId, chats.get(chats.size() - 1).getContent());
+                messageMap.put(
+                        roomId,
+                        chats.get(chats.size() - 1)
+                                .getContent()
+                );
             }
             List<Participant> findParticipants = participantRepository.findByRoomId(roomId);
             Member findMember = getOtherMember(member, findParticipants);
@@ -128,6 +133,10 @@ public class ChatService {
 
     @Transactional
     public void participateChat(Long otherMemberId, Member member, String category) {
+        List<Participant> otherParticipants = participantRepository.findByMemberId(otherMemberId);
+        List<Participant> myParticipants = participantRepository.findByMemberId(member.getId());
+        checkExistsChatRoom(otherParticipants, myParticipants);
+
         Room room = buildRoom(category);
         roomRepository.save(room);
 
@@ -139,6 +148,21 @@ public class ChatService {
 
         List<Participant> participants = List.of(me, other);
         participantRepository.saveAll(participants);
+    }
+
+    private void checkExistsChatRoom(List<Participant> otherParticipants, List<Participant> myParticipants) {
+        otherParticipants.forEach(
+                otherParticipant ->
+                        myParticipants.forEach(
+                                myParticipant -> {
+                                    Room otherRoom = otherParticipant.getRoom();
+                                    Room myRoom = myParticipant.getRoom();
+                                    if (otherRoom.getId().equals(myRoom.getId())) {
+                                        throw new IllegalArgumentException("Chat Room is already exists");
+                                    }
+                                }
+                        )
+        );
     }
 
     private Room buildRoom(String category) {
