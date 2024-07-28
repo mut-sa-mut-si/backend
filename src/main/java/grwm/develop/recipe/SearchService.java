@@ -14,6 +14,7 @@ import grwm.develop.subscribe.SubscribeItem;
 import grwm.develop.subscribe.SubscribeItemRepository;
 import grwm.develop.subscribe.SubscribeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.dialect.function.ListaggGroupConcatEmulation;
 import org.springframework.http.ResponseEntity;
 
 import java.util.*;
@@ -34,9 +35,10 @@ public class SearchService {
         Map<String, List<Hashtag>> groupHashtags = groupHashtagsByContent(hashtags);
         List<String> popularKeyword = groupHashtags.keySet().stream().toList();
         SearchPageResponse searchPageResponse = new SearchPageResponse();
-        Long num = 1L;
         for (String keyword : popularKeyword) {
-            SearchPageResponse.findPopularKeyword findPopularKeyword = new SearchPageResponse.findPopularKeyword(num, keyword);
+            SearchPageResponse.findPopularKeyword findPopularKeyword =
+                    new SearchPageResponse.
+                    findPopularKeyword(hashtagRepository.findByContent(keyword).getId(), keyword);
             searchPageResponse.Plus(findPopularKeyword);
         }
         return searchPageResponse;
@@ -76,28 +78,36 @@ public class SearchService {
                             num,
                             reviews.size(),
                             averageRating(reviews),
-                            new SearchRecipe.RecipeDetail(
-                                    recipe.getId(),
-                                    recipe.getTitle(),
-                                    imageRepository.findByRecipeId(recipe.getId()).getUrl(),
-                                    recipe.isPublic()),
+                            recipe.getTitle(),
+                            imageRepository.findByRecipeId(recipe.getId()).getUrl(),
+                            recipe.isPublic(),
                             new SearchRecipe.MemberDetail(
                                     recipe.getMember().getId(),
                                     recipe.getMember().getName()
                             ));
             searchRecipe.plus(findRecipe);
+            num++;
         }
         return searchRecipe;
     }
 
-    public SearchRecipe searchRecipeLogin(Member member, String category) {
-        SearchRecipe recipeListResponse = searchRecipe(category);
-        for (SearchRecipe.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
+    public SearchRecipe searchRecipeLogin(Member member, String keyword) {
+        SearchRecipe recipeListResponse = searchRecipe(keyword);
+//        for (SearchRecipe.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
+//            Member writer = memberRepository.findById(findRecipe.getMember().getId()).
+//                    orElseThrow(EntityNotFoundException::new);
+//            if (findRecipe.getRecipe().isPublic() == false &&
+//                    isSubscribe(member, writer)) {
+//                findRecipe.getRecipe().setPublic(true);
+//            }
+//        }
+        for (SearchRecipe.FindRecipe findRecipe : recipeListResponse.getRecipes())
+        {
             Member writer = memberRepository.findById(findRecipe.getMember().getId()).
                     orElseThrow(EntityNotFoundException::new);
-            if (findRecipe.getRecipe().isPublic() == false &&
-                    isSubscribe(member, writer)) {
-                findRecipe.getRecipe().setPublic(true);
+            if(findRecipe.isPublic() == false &&
+                    isSubscribe(member,writer)){
+                findRecipe.SetisPublic(true);
             }
         }
         return recipeListResponse;
