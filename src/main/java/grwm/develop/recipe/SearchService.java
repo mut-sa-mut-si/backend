@@ -38,7 +38,7 @@ public class SearchService {
         for (String keyword : popularKeyword) {
             SearchPageResponse.findPopularKeyword findPopularKeyword =
                     new SearchPageResponse.
-                    findPopularKeyword(hashtagRepository.findByContent(keyword).getId(), keyword);
+                            findPopularKeyword(hashtagRepository.findByContent(keyword).getId(), keyword);
             searchPageResponse.Plus(findPopularKeyword);
         }
         return searchPageResponse;
@@ -70,12 +70,11 @@ public class SearchService {
         }
 
         SearchRecipe searchRecipe = new SearchRecipe(keyword);
-        int num = 0;
         for (Recipe recipe : recipes) {
             List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
             SearchRecipe.FindRecipe findRecipe =
                     new SearchRecipe.FindRecipe(
-                            num,
+                            recipe.getId(),
                             reviews.size(),
                             averageRating(reviews),
                             recipe.getTitle(),
@@ -86,27 +85,18 @@ public class SearchService {
                                     recipe.getMember().getName()
                             ));
             searchRecipe.plus(findRecipe);
-            num++;
         }
         return searchRecipe;
     }
 
     public SearchRecipe searchRecipeLogin(Member member, String keyword) {
         SearchRecipe recipeListResponse = searchRecipe(keyword);
-//        for (SearchRecipe.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
-//            Member writer = memberRepository.findById(findRecipe.getMember().getId()).
-//                    orElseThrow(EntityNotFoundException::new);
-//            if (findRecipe.getRecipe().isPublic() == false &&
-//                    isSubscribe(member, writer)) {
-//                findRecipe.getRecipe().setPublic(true);
-//            }
-//        }
-        for (SearchRecipe.FindRecipe findRecipe : recipeListResponse.getRecipes())
-        {
+
+        for (SearchRecipe.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
             Member writer = memberRepository.findById(findRecipe.getMember().getId()).
                     orElseThrow(EntityNotFoundException::new);
-            if(findRecipe.isPublic() == false &&
-                    isSubscribe(member,writer)){
+            if (findRecipe.isPublic() == false &&
+                    isSubscribe(member, writer)) {
                 findRecipe.SetisPublic(true);
             }
         }
