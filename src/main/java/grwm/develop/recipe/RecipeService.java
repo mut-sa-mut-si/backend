@@ -162,7 +162,7 @@ public class RecipeService {
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
         boolean isClickedScrap;
-        if (scrapRepository.findBymemberId(member.getId()).contains(recipe)) {
+        if (scrapRepository.findByMemberId(member.getId()).contains(recipe)) {
             isClickedScrap = true;
         } else {
             isClickedScrap = false;
