@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
     List<Hashtag> findByContentContaining(String keyword);
+    Hashtag findByContent(String keyword);
 }
