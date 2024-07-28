@@ -45,7 +45,8 @@ public class ChatService {
                 .filter(room ->
                         room.getCategory()
                                 .toString()
-                                .equals(category))
+                                .equals(category)
+                )
                 .toList();
     }
 
@@ -57,11 +58,7 @@ public class ChatService {
             Long roomId = room.getId();
             List<Chat> chats = chatRepository.findByRoomId(roomId);
             if (!chats.isEmpty()) {
-                messageMap.put(
-                        roomId,
-                        chats.get(chats.size() - 1)
-                                .getContent()
-                );
+                messageMap.put(roomId, chats.get(chats.size() - 1).getContent());
             }
             List<Participant> findParticipants = participantRepository.findByRoomId(roomId);
             Member findMember = getOtherMember(member, findParticipants);
@@ -98,7 +95,8 @@ public class ChatService {
                 .filter(chat ->
                         chat.getMember()
                                 .getEmail()
-                                .equals(member.getEmail()))
+                                .equals(member.getEmail())
+                )
                 .toList();
     }
 
