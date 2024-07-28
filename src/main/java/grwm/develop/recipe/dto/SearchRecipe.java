@@ -28,23 +28,13 @@ public class SearchRecipe {
         private int id;
         private int reviewCount;
         private float ratingAverage;
-        private RecipeDetail recipe;
-        private MemberDetail member;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public static class RecipeDetail {
-        private Long id;
         private String title;
         private String image;
         private boolean isPublic;
+        private MemberDetail member;
+        public void SetisPublic(boolean isPublic) {this.isPublic = isPublic;}
 
-        public void setPublic(boolean setPublic) {
-            this.isPublic = setPublic;
-        }
     }
-
     @Getter
     @AllArgsConstructor
     public static class MemberDetail {
