@@ -172,6 +172,7 @@ public class RecipeService {
         }
         return recipeListResponse;
     }
+
     private float averageRating(List<Review> reviews)
     {
         float total = 0f;
