@@ -39,16 +39,16 @@ public class OnboardService {
 
     private void addHealthOnboard(OnboardRequest request, Member member, List<Onboard> onboards) {
         if (request.getHealth() != null) {
-            request.getHealth().getPurpose().forEach(
-                    purpose -> addOnboard(member, onboards, purpose, Category.HEALTH)
+            request.getHealth().forEach(
+                    purpose -> addOnboard(member, onboards, purpose.getPurpose(), Category.HEALTH)
             );
         }
     }
 
     private void addNutrientsOnboard(OnboardRequest request, Member member, List<Onboard> onboards) {
         if (request.getNutrients() != null) {
-            request.getNutrients().getNutrient().forEach(
-                    nutrient -> addOnboard(member, onboards, nutrient, Category.NUTRIENTS));
+            request.getNutrients().forEach(
+                    nutrient -> addOnboard(member, onboards, nutrient.getNutrient(), Category.NUTRIENTS));
         }
     }
 
