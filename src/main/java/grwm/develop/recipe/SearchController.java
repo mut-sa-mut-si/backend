@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/search")
 public class SearchController {
 
-    SearchService searchService;
-    RecipeService recipeService;
+    private final SearchService searchService;
+    private final RecipeService recipeService;
 
     @GetMapping
     public ResponseEntity<SearchPageResponse> searchPage() {

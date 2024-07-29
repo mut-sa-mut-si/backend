@@ -21,7 +21,6 @@ public class SearchService {
     public SearchPageResponse searchPage() {
         List<Hashtag> hashtags = hashtagRepository.findAll();
         Map<String, List<Hashtag>> groupHashtags = groupHashtagsByContent(hashtags);
-        List<String> popularKeyword = groupHashtags.keySet().stream().toList();
         return SearchPageResponse.from(groupHashtags);
     }
 
