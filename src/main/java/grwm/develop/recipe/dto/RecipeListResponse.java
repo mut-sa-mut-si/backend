@@ -1,12 +1,10 @@
-
 package grwm.develop.recipe.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 
 @Getter
@@ -50,5 +48,4 @@ public class RecipeListResponse {
         private Long id;
         private String name;
     }
-
 }

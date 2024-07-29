@@ -5,17 +5,15 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
 import grwm.develop.member.MemberRepository;
-import grwm.develop.recipe.dto.*;
+import grwm.develop.recipe.dto.ReadLockRecipeResponse;
+import grwm.develop.recipe.dto.ReadRecipeResponse;
+import grwm.develop.recipe.dto.RecipeListResponse;
+import grwm.develop.recipe.dto.WriteRecipeRequest;
+import grwm.develop.recipe.dto.WriteReviewRequest;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
 import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.*;
-
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
 import grwm.develop.recipe.scrap.ScrapRepository;
@@ -24,6 +22,15 @@ import grwm.develop.subscribe.SubscribeItem;
 import grwm.develop.subscribe.SubscribeItemRepository;
 import grwm.develop.subscribe.SubscribeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -120,8 +127,7 @@ public class RecipeService {
             Recipe recipe = hashtag.getRecipe();
             recipesHashtag.add(recipe);
         }
-        List<Recipe> recipes = integrateRecipe(recipesContent, recipesTitle, recipesHashtag);
-        return recipes;
+        return integrateRecipe(recipesContent, recipesTitle, recipesHashtag);
     }
 
     private RecipeListResponse buildRecipeList(List<Recipe> recipes) {
@@ -195,10 +201,12 @@ public class RecipeService {
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
         if (member == null) {
-            return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, Optional.empty(), writer, images, hashtags, reviews);
+            return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
+                    reviewCount, ratingAverage, false, writer, images, hashtags, reviews);
         } else {
-            Optional<Boolean> isClickedScrap = Optional.of(scrapRepository.existsByMemberIdAndRecipeId(member.getId(), recipe.getId()));
-            return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, isClickedScrap, writer, images, hashtags, reviews);
+            boolean isClickedScrap = scrapRepository.existsByMemberIdAndRecipeId(member.getId(), recipe.getId());
+            return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
+                    reviewCount, ratingAverage, isClickedScrap, writer, images, hashtags, reviews);
         }
 
     }
@@ -210,13 +218,23 @@ public class RecipeService {
     }
 
     public RecipeListResponse findRecipeList(Member member, String category) {
-        List<Recipe> recipes = recipeRepository.findAllByCategory(category);
+        List<Recipe> recipes = recipeRepository.findAllByCategory(getCategoryEnum(category));
         RecipeListResponse recipeListResponse = buildRecipeList(recipes);
         if (member == null) {
             return recipeListResponse;
         } else {
             return isSubscribeList(recipeListResponse, member);
         }
+    }
+
+    public Category getCategoryEnum(String category) {
+        if (category.equals("SKIN")) {
+            return Category.SKIN;
+        }
+        if (category.equals("HEALTH")) {
+            return Category.HEALTH;
+        }
+        return Category.NUTRIENTS;
     }
 
     public RecipeListResponse searchRecipeList(Member member, String keyword) {
@@ -235,7 +253,7 @@ public class RecipeService {
         SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(writer.getId());
         List<Subscribe> subscribes = subscribeRepository.findAllByMemberId(member.getId());
         for (Subscribe subscribe : subscribes) {
-            if (subscribe.getSubscribeItem().equals(subscribeItem)) {
+            if (subscribe.getSubscribeItem().getMember().getId().equals(subscribeItem.getMember().getId())) {
                 return true;
             }
         }

@@ -1,9 +1,8 @@
 package grwm.develop.subscribe;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-
-public interface SubscribeRepository extends JpaRepository<Subscribe,Long> {
-    List<Subscribe> findAllByMemberId(Long MemberId);
+public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
+    List<Subscribe> findAllByMemberId(Long memberId);
 }

@@ -1,27 +1,19 @@
 package grwm.develop.recipe.dto;
 
-import java.util.ArrayList;
+import grwm.develop.recipe.hashtag.Hashtag;
 import java.util.List;
+import java.util.Map;
 
-public class SearchPageResponse {
+public record SearchPageResponse(List<KeywordDTO> popularKeywords) {
 
-    List<findPopularKeyword> popularKewords;
-
-    public SearchPageResponse() {
-        popularKewords = new ArrayList<>();
+    public static SearchPageResponse from(Map<String, List<Hashtag>> hashtagMap) {
+        return new SearchPageResponse(
+                hashtagMap.entrySet().stream()
+                        .map(entry -> new KeywordDTO(entry.getValue().get(0).getId(), entry.getKey()))
+                        .toList()
+        );
     }
 
-    public void Plus(findPopularKeyword findPopularKeyword) {
-        popularKewords.add(findPopularKeyword);
-    }
-
-    public static class findPopularKeyword {
-        Long id;
-        String keword;
-
-        public findPopularKeyword(Long id, String keyword) {
-            this.id = id;
-            this.keword = keyword;
-        }
+    public record KeywordDTO(Long id, String keyWord) {
     }
 }
