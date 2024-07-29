@@ -10,12 +10,11 @@ import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
 import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
@@ -64,6 +63,7 @@ public class RecipeService {
         List<Image> uploadedImages = getUploadedImages(images, recipe);
         imageRepository.saveAll(uploadedImages);
     }
+
     @Transactional
     public void writeReview(Member member, WriteReviewRequest writeReviewRequest, Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
@@ -100,6 +100,49 @@ public class RecipeService {
                                 .build()
                 )
                 .toList();
+    }
+
+    public Review buildReview(Member member, WriteReviewRequest writeReviewRequest, Recipe recipe) {
+        return Review.builder()
+                .content(writeReviewRequest.content())
+                .rating(writeReviewRequest.rating())
+                .member(member)
+                .recipe(recipe)
+                .build();
+    }
+
+    private List<Recipe> buildSearchRecipeList(String keyword) {
+        List<Recipe> recipesContent = recipeRepository.findByContentContaining(keyword);
+        List<Recipe> recipesTitle = recipeRepository.findByTitleContaining(keyword);
+        List<Hashtag> hashtags = hashtagRepository.findByContentContaining(keyword);
+        List<Recipe> recipesHashtag = new ArrayList<>();
+        for (Hashtag hashtag : hashtags) {
+            Recipe recipe = hashtag.getRecipe();
+            recipesHashtag.add(recipe);
+        }
+        List<Recipe> recipes = integrateRecipe(recipesContent, recipesTitle, recipesHashtag);
+        return recipes;
+    }
+
+    private RecipeListResponse buildRecipeList(List<Recipe> recipes) {
+        RecipeListResponse recipeListResponse = new RecipeListResponse();
+        for (Recipe recipe : recipes) {
+            List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
+            RecipeListResponse.FindRecipe findRecipe =
+                    new RecipeListResponse.FindRecipe(
+                            recipe.getId(),
+                            reviews.size(),
+                            averageRating(reviews),
+                            recipe.getTitle(),
+                            imageRepository.findByRecipeId(recipe.getId()).getUrl(),
+                            recipe.isPublic(),
+                            new RecipeListResponse.MemberDetail(
+                                    recipe.getMember().getId(),
+                                    recipe.getMember().getName()
+                            ));
+            recipeListResponse.plus(findRecipe);
+        }
+        return recipeListResponse;
     }
 
     private List<Image> getUploadedImages(List<MultipartFile> images, Recipe recipe) {
@@ -142,16 +185,7 @@ public class RecipeService {
         return amazonS3Client.getUrl(bucket, fileName).toString();
     }
 
-    public Review buildReview(Member member, WriteReviewRequest writeReviewRequest, Recipe recipe) {
-        return Review.builder()
-                .content(writeReviewRequest.content())
-                .rating(writeReviewRequest.rating())
-                .member(member)
-                .recipe(recipe)
-                .build();
-    }
-
-    public ReadRecipeResponse findRecipe(Long id,Member member) {
+    public ReadRecipeResponse findRecipe(Long id, Member member) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         Member writer = recipe.getMember();
         List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
@@ -160,88 +194,83 @@ public class RecipeService {
         int recipeCount = recipeRepository.findAllByMemberId(writer.getId()).size();
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
-        if(member == null)
-        {
-            return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage,Optional.empty(), writer, images, hashtags, reviews);
-        }
-        else {
-            Optional<Boolean> isClickedScrap = Optional.of(scrapRepository.existsByMemberIdAndRecipeId(member.getId(),recipe.getId()));
-            return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage,isClickedScrap, writer, images, hashtags, reviews);
+        if (member == null) {
+            return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, Optional.empty(), writer, images, hashtags, reviews);
+        } else {
+            Optional<Boolean> isClickedScrap = Optional.of(scrapRepository.existsByMemberIdAndRecipeId(member.getId(), recipe.getId()));
+            return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, isClickedScrap, writer, images, hashtags, reviews);
         }
 
     }
-    
+
     public ReadLockRecipeResponse findRockRecipe(Member member, Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         Member writer = recipe.getMember();
         return ReadLockRecipeResponse.of(member.getPoint(), writer);
     }
 
-    public RecipeListResponse findRecipeList(Member member, String category)
-    {
+    public RecipeListResponse findRecipeList(Member member, String category) {
         List<Recipe> recipes = recipeRepository.findAllByCategory(category);
-        RecipeListResponse recipeListResponse = new RecipeListResponse();
-        for(Recipe recipe : recipes)
-        {
-            List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
-            RecipeListResponse.FindRecipe findRecipe =
-                    new RecipeListResponse.FindRecipe(
-                            recipe.getId(),
-                            reviews.size(),
-                            averageRating(reviews),
-                            recipe.getTitle(),
-                            imageRepository.findByRecipeId(recipe.getId()).getUrl(),
-                            recipe.isPublic(),
-                            new RecipeListResponse.MemberDetail(
-                                    recipe.getMember().getId(),
-                                    recipe.getMember().getName()
-                            ));
-            recipeListResponse.plus(findRecipe);
-        }
-        if(member == null)
-        {
+        RecipeListResponse recipeListResponse = buildRecipeList(recipes);
+        if (member == null) {
             return recipeListResponse;
+        } else {
+            return isSubscribeList(recipeListResponse, member);
         }
-        else {
-            return isSubscribeList(recipeListResponse,member);
+    }
+
+    public RecipeListResponse searchRecipeList(Member member, String keyword) {
+        List<Recipe> recipes = buildSearchRecipeList(keyword);
+        RecipeListResponse searchRecipe = buildRecipeList(recipes);
+        searchRecipe.setKeyword(keyword);
+        if (member == null) {
+            return searchRecipe;
+        } else {
+            return isSubscribeList(searchRecipe, member);
         }
 
     }
-    private float averageRating(List<Review> reviews)
-    {
-        float total = 0f;
-        for(Review review : reviews)
-        {
-            total += review.getRating();
-        }
-        return total/(float) reviews.size();
-    }
-    private RecipeListResponse isSubscribeList (RecipeListResponse recipeListResponse, Member member)
-    {
-        for(RecipeListResponse.FindRecipe findRecipe: recipeListResponse.getRecipes() )
-        {
-            Member writer = memberRepository.findById(findRecipe.getMember().getId()).
-                    orElseThrow(EntityNotFoundException::new);
-            if(findRecipe.isPublic() &&
-                    isSubscribe(member,writer))
-            {
-                findRecipe.setPublic(true);
-            }
-        }
-        return recipeListResponse;
-    }
-    private boolean isSubscribe(Member member,Member writer)
-    {
+
+    boolean isSubscribe(Member member, Member writer) {
         SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(writer.getId());
         List<Subscribe> subscribes = subscribeRepository.findAllByMemberId(member.getId());
-        for(Subscribe subscribe : subscribes)
-        {
-            if(subscribe.getSubscribeItem().equals(subscribeItem))
-            {
+        for (Subscribe subscribe : subscribes) {
+            if (subscribe.getSubscribeItem().equals(subscribeItem)) {
                 return true;
             }
         }
         return false;
     }
 
+    private RecipeListResponse isSubscribeList(RecipeListResponse recipeListResponse, Member member) {
+        for (RecipeListResponse.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
+            Member writer = memberRepository.findById(findRecipe.getMember().getId()).
+                    orElseThrow(EntityNotFoundException::new);
+            if (findRecipe.isPublic() &&
+                    isSubscribe(member, writer)) {
+                findRecipe.setPublic(true);
+            }
+        }
+        return recipeListResponse;
+    }
+
+    public List<Recipe> integrateRecipe(List<Recipe> recipesContent,
+                                        List<Recipe> recipesHashtag,
+                                        List<Recipe> recipesTitle) {
+        Set<Recipe> recipeSet = new LinkedHashSet<>();
+
+        recipeSet.addAll(recipesContent);
+        recipeSet.addAll(recipesHashtag);
+        recipeSet.addAll(recipesTitle);
+
+        return new ArrayList<>(recipeSet);
+    }
+
+    private float averageRating(List<Review> reviews) {
+        float total = 0f;
+        for (Review review : reviews) {
+            total += review.getRating();
+        }
+        return total / (float) reviews.size();
+    }
 }

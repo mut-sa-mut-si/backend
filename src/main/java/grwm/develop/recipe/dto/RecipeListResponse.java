@@ -16,11 +16,6 @@ import java.util.List;
 public class RecipeListResponse {
     private List<FindRecipe> recipes;
     private String keyword;
-    public RecipeListResponse(String keyword)
-    {
-        this.keyword = keyword;
-        recipes = new ArrayList<>();
-    }
     public RecipeListResponse()
     {
         recipes = new ArrayList<>();
@@ -29,6 +24,10 @@ public class RecipeListResponse {
     public void plus(FindRecipe findRecipe)
     {
         recipes.add(findRecipe);
+    }
+    public void setKeyword(String keyword)
+    {
+        this.keyword = keyword;
     }
     @Getter
     @AllArgsConstructor

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SearchController {
 
     SearchService searchService;
+    RecipeService recipeService;
 
     @GetMapping
     public ResponseEntity<SearchPageResponse> searchPage() {
@@ -26,14 +27,14 @@ public class SearchController {
 
     @GetMapping("/unauthentication")
     public ResponseEntity<RecipeListResponse> searchRecipe(@RequestParam("keyword") String keyword) {
-        RecipeListResponse response = searchService.searchRecipe(keyword);
+        RecipeListResponse response = recipeService.searchRecipeList(null, keyword);
         return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/authentication")
     public ResponseEntity<RecipeListResponse> searchRecipe(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                     @RequestParam("keyword") String keyword) {
-        RecipeListResponse response = searchService.searchRecipeLogin(userDetails.member(), keyword);
+                                                           @RequestParam("keyword") String keyword) {
+        RecipeListResponse response = recipeService.searchRecipeList(userDetails.member(), keyword);
         return ResponseEntity.ok().body(response);
     }
 }

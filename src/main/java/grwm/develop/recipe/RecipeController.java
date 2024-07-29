@@ -26,29 +26,30 @@ public class RecipeController {
         recipeService.writeRecipe(userDetails.member(), request, images);
         return ResponseEntity.ok().body("ok");
     }
+
     @GetMapping("/unauthentication")
-    public ResponseEntity<RecipeListResponse> list(@RequestParam("category")String category)
-    {
-        RecipeListResponse response = recipeService.findRecipeList(null,category);
-        return  ResponseEntity.ok().body(response);
-    }
-    @GetMapping("/authentication")
-    public ResponseEntity<RecipeListResponse> listLogin(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                        @RequestParam("category")String category)
-    {
-        RecipeListResponse response = recipeService.findRecipeList(userDetails.member(),category);
+    public ResponseEntity<RecipeListResponse> list(@RequestParam("category") String category) {
+        RecipeListResponse response = recipeService.findRecipeList(null, category);
         return ResponseEntity.ok().body(response);
     }
+
+    @GetMapping("/authentication")
+    public ResponseEntity<RecipeListResponse> listLogin(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                        @RequestParam("category") String category) {
+        RecipeListResponse response = recipeService.findRecipeList(userDetails.member(), category);
+        return ResponseEntity.ok().body(response);
+    }
+
     @GetMapping("/{id}/unauthentication")
     public ResponseEntity<ReadRecipeResponse> detailedInqury(@PathVariable("id") Long id) {
-        ReadRecipeResponse response = recipeService.findRecipe(id,null);
+        ReadRecipeResponse response = recipeService.findRecipe(id, null);
         return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/{id}/authentication")
     public ResponseEntity<ReadRecipeResponse> detailedInquryLogin(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                                                       @PathVariable("id") Long id) {
-        ReadRecipeResponse response = recipeService.findRecipe(id,userDetails.member());
+                                                                  @PathVariable("id") Long id) {
+        ReadRecipeResponse response = recipeService.findRecipe(id, userDetails.member());
         return ResponseEntity.ok().body(response);
     }
 
