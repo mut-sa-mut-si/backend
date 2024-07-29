@@ -9,29 +9,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
-
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecipeListResponse {
     private List<FindRecipe> recipes;
     private String keyword;
-    public RecipeListResponse()
-    {
+
+    public RecipeListResponse() {
         recipes = new ArrayList<>();
         keyword = null;
     }
-    public void plus(FindRecipe findRecipe)
-    {
+
+    public void plus(FindRecipe findRecipe) {
         recipes.add(findRecipe);
     }
-    public void setKeyword(String keyword)
-    {
+
+    public void setKeyword(String keyword) {
         this.keyword = keyword;
     }
+
     @Getter
     @AllArgsConstructor
-    public static class FindRecipe{
+    public static class FindRecipe {
         private Long id;
         private int reviewCount;
         private float ratingAverage;
@@ -39,14 +38,15 @@ public class RecipeListResponse {
         private String image;
         private boolean isPublic;
         private MemberDetail member;
-        public void setPublic(boolean value)
-        {
+
+        public void setPublic(boolean value) {
             this.isPublic = value;
         }
     }
+
     @Getter
     @AllArgsConstructor
-    public static class MemberDetail{
+    public static class MemberDetail {
         private Long id;
         private String name;
     }
