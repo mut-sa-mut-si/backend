@@ -1,6 +1,7 @@
 
 package grwm.develop.recipe.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,11 +12,19 @@ import java.util.List;
 
 
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecipeListResponse {
     private List<FindRecipe> recipes;
+    private String keyword;
+    public RecipeListResponse(String keyword)
+    {
+        this.keyword = keyword;
+        recipes = new ArrayList<>();
+    }
     public RecipeListResponse()
     {
         recipes = new ArrayList<>();
+        keyword = null;
     }
     public void plus(FindRecipe findRecipe)
     {
