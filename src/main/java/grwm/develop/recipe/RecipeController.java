@@ -38,18 +38,17 @@ public class RecipeController {
     {
         RecipeListResponse response = recipeService.findRecipeListLogin(userDetails.member(),category);
         return ResponseEntity.ok().body(response);
-
     }
     @GetMapping("/{id}/unauthentication")
     public ResponseEntity<ReadRecipeResponse> detailedInqury(@PathVariable("id") Long id) {
-        ReadRecipeResponse response = recipeService.findRecipe(id);
+        ReadRecipeResponse response = recipeService.findRecipe(id,null);
         return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/{id}/authentication")
     public ResponseEntity<ReadRecipeResponse> detailedInquryLogin(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                        @PathVariable("id") Long id) {
-        ReadRecipeResponse response = recipeService.findRecipeLogin(userDetails.member(), id);
+        ReadRecipeResponse response = recipeService.findRecipe(id,userDetails.member());
         return ResponseEntity.ok().body(response);
     }
 
