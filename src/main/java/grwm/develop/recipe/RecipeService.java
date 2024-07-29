@@ -161,10 +161,10 @@ public class RecipeService {
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
 
-        return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, writer, images, hashtags, reviews);
+        return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage,Optional.empty(), writer, images, hashtags, reviews);
     }
 
-    public ReadRecipeResponseLogin findRecipeLogin(Member member, Long id) {
+    public ReadRecipeResponse findRecipeLogin(Member member, Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         Member writer = recipe.getMember();
         List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
@@ -173,9 +173,14 @@ public class RecipeService {
         int recipeCount = recipeRepository.findAllByMemberId(writer.getId()).size();
         int reviewCount = reviews.size();
         float ratingAverage = averageRating(reviews);
-        boolean isClickedScrap;
-        isClickedScrap = scrapRepository.findByMemberId(member.getId()).getRecipe().equals(recipe);
-        return ReadRecipeResponseLogin.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, isClickedScrap, writer, images, hashtags, reviews);
+        Optional<Boolean> isClickedScrap;
+        isClickedScrap = Optional.of(scrapRepository.findByMemberId(member.getId()).getRecipe().equals(recipe));
+        return ReadRecipeResponse.of(recipe.getId(),
+                recipe.getTitle(),
+                recipe.getContent(),
+                recipeCount, reviewCount, ratingAverage,
+                isClickedScrap,
+                 writer, images, hashtags, reviews);
     }
 
     public ReadLockRecipeResponse findRockRecipe(Member member, Long id) {

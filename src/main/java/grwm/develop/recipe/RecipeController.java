@@ -47,9 +47,9 @@ public class RecipeController {
     }
 
     @GetMapping("/{id}/authentication")
-    public ResponseEntity<ReadRecipeResponseLogin> detailedInquryLogin(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<ReadRecipeResponse> detailedInquryLogin(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                                        @PathVariable("id") Long id) {
-        ReadRecipeResponseLogin response = recipeService.findRecipeLogin(userDetails.member(), id);
+        ReadRecipeResponse response = recipeService.findRecipeLogin(userDetails.member(), id);
         return ResponseEntity.ok().body(response);
     }
 
