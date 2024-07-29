@@ -8,7 +8,6 @@ import grwm.develop.qna.dto.QuestionDetailResponse;
 import grwm.develop.qna.dto.QuestionDetailResponse.AnswerDetail;
 import grwm.develop.qna.dto.QuestionDetailResponse.QuestionDetail;
 import grwm.develop.qna.dto.QuestionMainResponse;
-import grwm.develop.qna.dto.QuestionMainResponse.Writer;
 import grwm.develop.qna.question.dto.SearchMyQuestionResponse;
 import grwm.develop.qna.question.dto.SearchQuestionRequest;
 import grwm.develop.qna.question.dto.SearchQuestionResponse;
@@ -54,15 +53,12 @@ public class QuestionService {
     }
 
     private List<QuestionMainResponse.CategoryQuestion> getCategoryQuestions(List<Question> questions) {
-        List<Question> categoryQuestions = questions.stream()
+        return questions.stream()
                 .sorted(Comparator.comparing(Question::getCreatedAt).reversed())
-                .toList();
-
-        return categoryQuestions.stream()
                 .map(question -> new QuestionMainResponse.CategoryQuestion(
                         question.getId(),
                         question.getTitle(),
-                        new Writer(question.getMember().getId(), question.getMember().getName())
+                        new QuestionMainResponse.Writer(question.getMember().getId(), question.getMember().getName())
                 ))
                 .toList();
     }
