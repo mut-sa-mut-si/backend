@@ -4,14 +4,18 @@ import grwm.develop.member.Member;
 import java.util.List;
 
 public record QuestionDetailResponse(
-        Long questionId,
-        String questionTitle,
-        String questionContent,
-        Member questionMember,
+        QuestionDetail question,
         List<AnswerDetail> answers) {
 
+    public record QuestionDetail(
+            Long Id,
+            String Title,
+            String Content,
+            Member Member
+    ) {}
+
     public record AnswerDetail(
-            Long answerId,
-            String answerContent,
-            Member answerMember) {}
+            Long Id,
+            String Content,
+            Member Member) {}
 }

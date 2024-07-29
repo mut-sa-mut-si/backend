@@ -46,8 +46,8 @@ public class QuestionController {
     }
 
     @GetMapping("/search")
-    public SearchQuestionResponse searchQuestions(@RequestParam("keyword") String keyword) {
+    public ResponseEntity<SearchQuestionResponse> searchQuestions(@RequestParam("keyword") String keyword) {
         SearchQuestionRequest request = new SearchQuestionRequest(keyword);
-        return questionService.searchQuestions(request);
+        return ResponseEntity.ok().body(questionService.searchQuestions(request));
     }
 }

@@ -3,25 +3,23 @@ package grwm.develop.qna.dto;
 import java.util.List;
 
 public record QuestionMainResponse(
-        List<Faq> faqs,
-        List<WaitingAnswerQuestion> waitingAnswerQuestions) {
-    public record Faq(
-            Long id,
-            String title,
-            String content,
-            Writer questionWriter,
-            Writer answerWriter,
-            String firstAnswer) {}
-
-    public record Writer(
-            Long id,
-            String name
-    ) {}
-
+        List<WaitingAnswerQuestion> waitingAnswerQuestions,
+        List<CategoryQuestion> categoryQuestions) {
     public record WaitingAnswerQuestion(
             Long id,
             String title,
             String content,
-            Writer writer
+            Writer member
+    ) {}
+
+    public record CategoryQuestion(
+            Long id,
+            String title,
+            Writer member
+    ) {}
+
+    public record Writer(
+            Long id,
+            String name
     ) {}
 }

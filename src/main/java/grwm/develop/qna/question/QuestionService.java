@@ -6,7 +6,9 @@ import grwm.develop.qna.answer.Answer;
 import grwm.develop.qna.answer.AnswerRepository;
 import grwm.develop.qna.dto.QuestionDetailResponse;
 import grwm.develop.qna.dto.QuestionDetailResponse.AnswerDetail;
+import grwm.develop.qna.dto.QuestionDetailResponse.QuestionDetail;
 import grwm.develop.qna.dto.QuestionMainResponse;
+import grwm.develop.qna.dto.QuestionMainResponse.Writer;
 import grwm.develop.qna.question.dto.SearchQuestionRequest;
 import grwm.develop.qna.question.dto.SearchQuestionResponse;
 import grwm.develop.qna.question.dto.SearchQuestionResponse.SearchQuestion;
@@ -15,7 +17,6 @@ import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,31 +29,9 @@ public class QuestionService {
 
     public QuestionMainResponse getMainPage(String category) {
         List<Question> questions = questionRepository.findAllByCategory(category);
-        List<QuestionMainResponse.Faq> faqs = getFaqs(questions);
         List<QuestionMainResponse.WaitingAnswerQuestion> waitingAnswerQuestions = getWaitingAnswerQuestions(questions);
-        return new QuestionMainResponse(faqs, waitingAnswerQuestions);
-    }
-
-    private List<QuestionMainResponse.Faq> getFaqs(List<Question> questions) {
-        List<Question> randomQuestions = questions.stream()
-                .limit(5)
-                .sorted(Comparator.comparingDouble(q -> Math.random()))
-                .toList();
-
-        return randomQuestions.stream()
-                .map(question -> {
-                    Optional<Answer> firstAnswer = answerRepository.findFirstByQuestion(question);
-
-                    return new QuestionMainResponse.Faq(
-                            question.getId(),
-                            question.getTitle(),
-                            question.getContent(),
-                            new QuestionMainResponse.Writer(question.getMember().getId(), question.getMember().getName()),
-                            firstAnswer.map(answer -> new QuestionMainResponse.Writer(answer.getMember().getId(), answer.getMember().getName())).orElse(null),
-                            firstAnswer.map(Answer::getContent).orElse(null)
-                    );
-                })
-                .toList();
+        List<QuestionMainResponse.CategoryQuestion> categoryQuestions = getCategoryQuestions(questions);
+        return new QuestionMainResponse(waitingAnswerQuestions, categoryQuestions);
     }
 
     private List<QuestionMainResponse.WaitingAnswerQuestion> getWaitingAnswerQuestions(List<Question> questions) {
@@ -68,6 +47,20 @@ public class QuestionService {
                         question.getTitle(),
                         question.getContent(),
                         new QuestionMainResponse.Writer(question.getMember().getId(), question.getMember().getName())
+                ))
+                .toList();
+    }
+
+    private List<QuestionMainResponse.CategoryQuestion> getCategoryQuestions(List<Question> questions) {
+        List<Question> categoryQuestions = questions.stream()
+                .sorted(Comparator.comparing(Question::getCreatedAt).reversed())
+                .toList();
+
+        return categoryQuestions.stream()
+                .map(question -> new QuestionMainResponse.CategoryQuestion(
+                        question.getId(),
+                        question.getTitle(),
+                        new Writer(question.getMember().getId(), question.getMember().getName())
                 ))
                 .toList();
     }
@@ -96,12 +89,17 @@ public class QuestionService {
         List<Answer> answers = answerRepository.findAllByQuestion(question);
         List<AnswerDetail> answerDetails = getAnswerDetails(answers);
 
-        return new QuestionDetailResponse(
+        QuestionDetail questionDetail = getQuestionDetail(question);
+
+        return new QuestionDetailResponse(questionDetail, answerDetails);
+    }
+
+    private static QuestionDetail getQuestionDetail(Question question) {
+        return new QuestionDetail(
                 question.getId(),
                 question.getTitle(),
                 question.getContent(),
-                question.getMember(),
-                answerDetails
+                question.getMember()
         );
     }
 
