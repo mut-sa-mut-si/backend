@@ -9,6 +9,7 @@ import grwm.develop.qna.dto.QuestionDetailResponse.AnswerDetail;
 import grwm.develop.qna.dto.QuestionDetailResponse.QuestionDetail;
 import grwm.develop.qna.dto.QuestionMainResponse;
 import grwm.develop.qna.dto.QuestionMainResponse.Writer;
+import grwm.develop.qna.question.dto.SearchMyQuestionResponse;
 import grwm.develop.qna.question.dto.SearchQuestionRequest;
 import grwm.develop.qna.question.dto.SearchQuestionResponse;
 import grwm.develop.qna.question.dto.SearchQuestionResponse.SearchQuestion;
@@ -17,6 +18,7 @@ import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -124,12 +126,43 @@ public class QuestionService {
     private static List<SearchQuestion> getSearchQuestions(List<Question> contentMatches, List<Question> titleMatches) {
         List<SearchQuestion> questions = new ArrayList<>();
         questions.addAll(contentMatches.stream()
-                .map(q -> new SearchQuestion(q.getId(), new SearchQuestionResponse.Question(q.getId(), q.getTitle(), q.getContent())))
+                .map(q -> new SearchQuestion(q.getId(),
+                        new SearchQuestionResponse.Question(q.getId(), q.getTitle(), q.getContent())))
                 .toList());
         questions.addAll(titleMatches.stream()
                 .filter(q -> !contentMatches.contains(q))
-                .map(q -> new SearchQuestion(q.getId(), new SearchQuestionResponse.Question(q.getId(), q.getTitle(), q.getContent())))
+                .map(q -> new SearchQuestion(q.getId(),
+                        new SearchQuestionResponse.Question(q.getId(), q.getTitle(), q.getContent())))
                 .toList());
         return questions;
+    }
+
+    public SearchMyQuestionResponse searchMyQuestions(Member member) {
+        List<Question> myQuestions = questionRepository.findAllByMember(member);
+        List<SearchMyQuestionResponse.Question> questions = getQuestions(myQuestions);
+
+        return new SearchMyQuestionResponse(questions);
+    }
+
+    private List<SearchMyQuestionResponse.Question> getQuestions(List<Question> myQuestions) {
+        return myQuestions.stream()
+                .sorted(Comparator.comparing(Question::getCreatedAt).reversed())
+                .map(q -> {
+                    Optional<Answer> firstAnswer = answerRepository.findFirstByQuestion(q);
+                    String content = firstAnswer.map(Answer::getContent).orElse(null);
+                    SearchMyQuestionResponse.Member answerMember = firstAnswer
+                            .filter(answer -> answer.getMember() != null)
+                            .map(answer -> new SearchMyQuestionResponse.Member(answer.getMember().getId(),
+                                    answer.getMember().getName()))
+                            .orElse(null);
+
+                    return new SearchMyQuestionResponse.Question(
+                            q.getId(),
+                            q.getTitle(),
+                            content,
+                            answerMember
+                    );
+                })
+                .toList();
     }
 }

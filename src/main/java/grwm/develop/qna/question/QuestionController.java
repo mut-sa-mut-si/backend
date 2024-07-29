@@ -3,6 +3,7 @@ package grwm.develop.qna.question;
 import grwm.develop.auth.security.UserDetailsImpl;
 import grwm.develop.qna.dto.QuestionDetailResponse;
 import grwm.develop.qna.dto.QuestionMainResponse;
+import grwm.develop.qna.question.dto.SearchMyQuestionResponse;
 import grwm.develop.qna.question.dto.SearchQuestionRequest;
 import grwm.develop.qna.question.dto.SearchQuestionResponse;
 import grwm.develop.qna.question.dto.WriteQuestionRequest;
@@ -49,5 +50,11 @@ public class QuestionController {
     public ResponseEntity<SearchQuestionResponse> searchQuestions(@RequestParam("keyword") String keyword) {
         SearchQuestionRequest request = new SearchQuestionRequest(keyword);
         return ResponseEntity.ok().body(questionService.searchQuestions(request));
+    }
+
+    @GetMapping("/my-question")
+    public ResponseEntity<SearchMyQuestionResponse> searchMyQuestion(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        SearchMyQuestionResponse response = questionService.searchMyQuestions(userDetails.member());
+        return ResponseEntity.ok().body(response);
     }
 }
