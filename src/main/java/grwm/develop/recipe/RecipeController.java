@@ -29,14 +29,14 @@ public class RecipeController {
     @GetMapping("/unauthentication")
     public ResponseEntity<RecipeListResponse> list(@RequestParam("category")String category)
     {
-        RecipeListResponse response = recipeService.findRecipeList(category);
+        RecipeListResponse response = recipeService.findRecipeList(null,category);
         return  ResponseEntity.ok().body(response);
     }
     @GetMapping("/authentication")
     public ResponseEntity<RecipeListResponse> listLogin(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                         @RequestParam("category")String category)
     {
-        RecipeListResponse response = recipeService.findRecipeListLogin(userDetails.member(),category);
+        RecipeListResponse response = recipeService.findRecipeList(userDetails.member(),category);
         return ResponseEntity.ok().body(response);
     }
     @GetMapping("/{id}/unauthentication")

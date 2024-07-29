@@ -177,7 +177,7 @@ public class RecipeService {
         return ReadLockRecipeResponse.of(member.getPoint(), writer);
     }
 
-    public RecipeListResponse findRecipeList(String category)
+    public RecipeListResponse findRecipeList(Member member, String category)
     {
         List<Recipe> recipes = recipeRepository.findAllByCategory(category);
         RecipeListResponse recipeListResponse = new RecipeListResponse();
@@ -198,11 +198,26 @@ public class RecipeService {
                             ));
             recipeListResponse.plus(findRecipe);
         }
-        return recipeListResponse;
+        if(member == null)
+        {
+            return recipeListResponse;
+        }
+        else {
+            return isSubscribeList(recipeListResponse,member);
+        }
+
     }
-    public RecipeListResponse findRecipeListLogin(Member member,String category)
+    private float averageRating(List<Review> reviews)
     {
-        RecipeListResponse recipeListResponse = findRecipeList(category);
+        float total = 0f;
+        for(Review review : reviews)
+        {
+            total += review.getRating();
+        }
+        return total/(float) reviews.size();
+    }
+    private RecipeListResponse isSubscribeList (RecipeListResponse recipeListResponse, Member member)
+    {
         for(RecipeListResponse.FindRecipe findRecipe: recipeListResponse.getRecipes() )
         {
             Member writer = memberRepository.findById(findRecipe.getMember().getId()).
@@ -215,17 +230,7 @@ public class RecipeService {
         }
         return recipeListResponse;
     }
-
-    private float averageRating(List<Review> reviews)
-    {
-        float total = 0f;
-        for(Review review : reviews)
-        {
-            total += review.getRating();
-        }
-        return total/(float) reviews.size();
-    }
-    boolean isSubscribe(Member member,Member writer)
+    private boolean isSubscribe(Member member,Member writer)
     {
         SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(writer.getId());
         List<Subscribe> subscribes = subscribeRepository.findAllByMemberId(member.getId());
