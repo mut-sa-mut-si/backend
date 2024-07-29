@@ -5,8 +5,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
 import grwm.develop.member.MemberRepository;
-import grwm.develop.recipe.dto.RecipeListResponse;
-import grwm.develop.recipe.dto.WriteRecipeRequest;
+import grwm.develop.recipe.dto.*;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
 import grwm.develop.recipe.image.Image;
@@ -20,6 +19,7 @@ import java.util.Optional;
 
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
+import grwm.develop.recipe.scrap.ScrapRepository;
 import grwm.develop.subscribe.Subscribe;
 import grwm.develop.subscribe.SubscribeItem;
 import grwm.develop.subscribe.SubscribeItemRepository;
@@ -51,6 +51,7 @@ public class RecipeService {
     private final MemberRepository memberRepository;
     private final SubscribeRepository subscribeRepository;
     private final SubscribeItemRepository subscribeItemRepository;
+    private final ScrapRepository scrapRepository;
 
     @Transactional
     public void writeRecipe(Member member, WriteRecipeRequest request, List<MultipartFile> images) {
@@ -62,6 +63,12 @@ public class RecipeService {
 
         List<Image> uploadedImages = getUploadedImages(images, recipe);
         imageRepository.saveAll(uploadedImages);
+    }
+    @Transactional
+    public void writeReview(Member member, WriteReviewRequest writeReviewRequest, Long id) {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        Review review = buildReview(member, writeReviewRequest, recipe);
+        reviewRepository.save(review);
     }
 
     private Recipe buildRecipe(Member member, WriteRecipeRequest request) {
@@ -134,6 +141,49 @@ public class RecipeService {
         );
         return amazonS3Client.getUrl(bucket, fileName).toString();
     }
+
+    public Review buildReview(Member member, WriteReviewRequest writeReviewRequest, Recipe recipe) {
+        return Review.builder()
+                .content(writeReviewRequest.content())
+                .rating(writeReviewRequest.rating())
+                .member(member)
+                .recipe(recipe)
+                .build();
+    }
+
+    public ReadRecipeResponse findRecipe(Long id) {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        Member writer = recipe.getMember();
+        List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
+        List<Image> images = imageRepository.findAllByRecipeId(recipe.getId());
+        List<Hashtag> hashtags = hashtagRepository.findAllByRecipeId(recipe.getId());
+        int recipeCount = recipeRepository.findAllByMemberId(writer.getId()).size();
+        int reviewCount = reviews.size();
+        float ratingAverage = averageRating(reviews);
+
+        return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, writer, images, hashtags, reviews);
+    }
+
+    public ReadRecipeResponseLogin findRecipeLogin(Member member, Long id) {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        Member writer = recipe.getMember();
+        List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
+        List<Image> images = imageRepository.findAllByRecipeId(recipe.getId());
+        List<Hashtag> hashtags = hashtagRepository.findAllByRecipeId(recipe.getId());
+        int recipeCount = recipeRepository.findAllByMemberId(writer.getId()).size();
+        int reviewCount = reviews.size();
+        float ratingAverage = averageRating(reviews);
+        boolean isClickedScrap;
+        isClickedScrap = scrapRepository.findByMemberId(member.getId()).getRecipe().equals(recipe);
+        return ReadRecipeResponseLogin.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount, reviewCount, ratingAverage, isClickedScrap, writer, images, hashtags, reviews);
+    }
+
+    public ReadLockRecipeResponse findRockRecipe(Member member, Long id) {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        Member writer = recipe.getMember();
+        return ReadLockRecipeResponse.of(member.getPoint(), writer);
+    }
+
     public RecipeListResponse findRecipeList(String category)
     {
         List<Recipe> recipes = recipeRepository.findAllByCategory(category);
@@ -164,7 +214,7 @@ public class RecipeService {
         {
             Member writer = memberRepository.findById(findRecipe.getMember().getId()).
                     orElseThrow(EntityNotFoundException::new);
-            if(findRecipe.isPublic() == false &&
+            if(!findRecipe.isPublic() &&
                     isSubscribe(member,writer))
             {
                 findRecipe.setPublic(true);

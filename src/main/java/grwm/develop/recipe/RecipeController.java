@@ -1,9 +1,10 @@
 package grwm.develop.recipe;
 
 import grwm.develop.auth.security.UserDetailsImpl;
-import grwm.develop.recipe.dto.RecipeListResponse;
-import grwm.develop.recipe.dto.WriteRecipeRequest;
+import grwm.develop.recipe.dto.*;
+
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,6 +39,33 @@ public class RecipeController {
         RecipeListResponse response = recipeService.findRecipeListLogin(userDetails.member(),category);
         return ResponseEntity.ok().body(response);
 
+    }
+    @GetMapping("/{id}/unauthentication")
+    public ResponseEntity<ReadRecipeResponse> detailedInqury(@PathVariable("id") Long id) {
+        ReadRecipeResponse response = recipeService.findRecipe(id);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/{id}/authentication")
+    public ResponseEntity<ReadRecipeResponseLogin> detailedInquryLogin(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                       @PathVariable("id") Long id) {
+        ReadRecipeResponseLogin response = recipeService.findRecipeLogin(userDetails.member(), id);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/{id}/lock")
+    public ResponseEntity<ReadLockRecipeResponse> detailedInquryLock(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                     @PathVariable("id") Long id) {
+        ReadLockRecipeResponse response = recipeService.findRockRecipe(userDetails.member(), id);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PostMapping("/{id}/reviews")
+    public ResponseEntity<String> writeReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                              @RequestBody WriteReviewRequest writeReviewRequest,
+                                              @PathVariable("id") Long id) {
+        recipeService.writeReview(userDetails.member(), writeReviewRequest, id);
+        return ResponseEntity.ok().body("ok");
     }
 
 }
