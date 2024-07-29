@@ -6,4 +6,7 @@ import java.util.List;
 
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     List<Recipe> findAllByCategory(String category);
+    List<Recipe> findByTitleContaining(String keyword);
+    List<Recipe> findByContentContaining(String keyword);
+
 }
