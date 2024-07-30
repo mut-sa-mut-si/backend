@@ -81,13 +81,8 @@ public class RecipeService {
     }
 
     private Recipe buildRecipe(Member member, WriteRecipeRequest request) {
-        return Recipe.builder()
-                .category(getCategory(request.category()))
-                .title(request.title())
-                .content(request.content())
-                .isPublic(request.isPublic())
-                .member(member)
-                .build();
+        return Recipe.builder().category(getCategory(request.category())).title(request.title())
+                .content(request.content()).isPublic(request.isPublic()).member(member).build();
     }
 
     private Category getCategory(String inputCategory) {
@@ -102,22 +97,12 @@ public class RecipeService {
 
     private List<Hashtag> buildHashtags(WriteRecipeRequest request, Recipe recipe) {
         return request.hashtags().stream()
-                .map(hashtag ->
-                        Hashtag.builder()
-                                .content(hashtag.content())
-                                .recipe(recipe)
-                                .build()
-                )
-                .toList();
+                .map(hashtag -> Hashtag.builder().content(hashtag.content()).recipe(recipe).build()).toList();
     }
 
     public Review buildReview(Member member, WriteReviewRequest writeReviewRequest, Recipe recipe) {
-        return Review.builder()
-                .content(writeReviewRequest.content())
-                .rating(writeReviewRequest.rating())
-                .member(member)
-                .recipe(recipe)
-                .build();
+        return Review.builder().content(writeReviewRequest.content()).rating(writeReviewRequest.rating()).member(member)
+                .recipe(recipe).build();
     }
 
     private List<Recipe> buildSearchRecipeList(String keyword) {
@@ -136,38 +121,24 @@ public class RecipeService {
         RecipeListResponse recipeListResponse = new RecipeListResponse();
         for (Recipe recipe : recipes) {
             List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
-            RecipeListResponse.FindRecipe findRecipe =
-                    new RecipeListResponse.FindRecipe(
-                            recipe.getId(),
-                            reviews.size(),
-                            averageRating(reviews),
-                            recipe.getTitle(),
-                            imageRepository.findByRecipeId(recipe.getId()).getUrl(),
-                            recipe.isPublic(),
-                            new RecipeListResponse.MemberDetail(
-                                    recipe.getMember().getId(),
-                                    recipe.getMember().getName()
-                            ));
+            RecipeListResponse.FindRecipe findRecipe = new RecipeListResponse.FindRecipe(recipe.getId(), reviews.size(),
+                    averageRating(reviews), recipe.getTitle(),
+                    imageRepository.findByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList(),
+                    recipe.isPublic(),
+                    new RecipeListResponse.MemberDetail(recipe.getMember().getId(), recipe.getMember().getName()));
             recipeListResponse.plus(findRecipe);
         }
         return recipeListResponse;
     }
 
     private List<Image> getUploadedImages(List<MultipartFile> images, Recipe recipe) {
-        return images.stream()
-                .map(this::tryConvertFile)
-                .map(this::uploadImage)
-                .map(uploadImageUrl -> Image.builder()
-                        .url(uploadImageUrl)
-                        .recipe(recipe)
-                        .build())
-                .toList();
+        return images.stream().map(this::tryConvertFile).map(this::uploadImage)
+                .map(uploadImageUrl -> Image.builder().url(uploadImageUrl).recipe(recipe).build()).toList();
     }
 
     private File tryConvertFile(MultipartFile image) {
         try {
-            return convertFile(image)
-                    .orElseThrow(IllegalArgumentException::new);
+            return convertFile(image).orElseThrow(IllegalArgumentException::new);
         } catch (IOException e) {
             log.error("Do not converted multipart file to image.");
             throw new IllegalArgumentException("Do not converted multipart file to image.");
@@ -187,9 +158,7 @@ public class RecipeService {
 
     private String uploadImage(File file) {
         String fileName = IMAGE_SAVE_PATH_PREFIX + file.getName();
-        amazonS3Client.putObject(
-                new PutObjectRequest(bucket, fileName, file)
-        );
+        amazonS3Client.putObject(new PutObjectRequest(bucket, fileName, file));
         return amazonS3Client.getUrl(bucket, fileName).toString();
     }
 
@@ -264,18 +233,16 @@ public class RecipeService {
 
     private RecipeListResponse isSubscribeList(RecipeListResponse recipeListResponse, Member member) {
         for (RecipeListResponse.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
-            Member writer = memberRepository.findById(findRecipe.getMember().getId()).
-                    orElseThrow(EntityNotFoundException::new);
-            if (findRecipe.isPublic() &&
-                    isSubscribe(member, writer)) {
+            Member writer = memberRepository.findById(findRecipe.getMember().getId())
+                    .orElseThrow(EntityNotFoundException::new);
+            if (findRecipe.isPublic() && isSubscribe(member, writer)) {
                 findRecipe.setPublic(true);
             }
         }
         return recipeListResponse;
     }
 
-    public List<Recipe> integrateRecipe(List<Recipe> recipesContent,
-                                        List<Recipe> recipesHashtag,
+    public List<Recipe> integrateRecipe(List<Recipe> recipesContent, List<Recipe> recipesHashtag,
                                         List<Recipe> recipesTitle) {
         Set<Recipe> recipeSet = new LinkedHashSet<>();
 
@@ -291,8 +258,10 @@ public class RecipeService {
         for (Review review : reviews) {
             total += review.getRating();
         }
-        BigDecimal decimal = new BigDecimal(total / (float) reviews.size())
-                .setScale(1, RoundingMode.HALF_UP);
+        if (total == 0f) {
+            return 0.0f;
+        }
+        BigDecimal decimal = new BigDecimal(total / (float) reviews.size()).setScale(1, RoundingMode.HALF_UP);
         return decimal.floatValue();
     }
 }
