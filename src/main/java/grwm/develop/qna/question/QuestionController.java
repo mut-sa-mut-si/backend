@@ -25,10 +25,9 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @GetMapping
-    public ResponseEntity<QuestionMainResponse> mainQuestionPage(@RequestParam("category") String category)
-    {
+    public ResponseEntity<QuestionMainResponse> mainQuestionPage(@RequestParam("category") String category) {
         QuestionMainResponse response = questionService.getMainPage(category);
-        return  ResponseEntity.ok().body(response);
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping
@@ -52,7 +51,8 @@ public class QuestionController {
     }
 
     @GetMapping("/my-question")
-    public ResponseEntity<SearchMyQuestionResponse> searchMyQuestion(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<SearchMyQuestionResponse> searchMyQuestion(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         SearchMyQuestionResponse response = questionService.searchMyQuestions(userDetails.member());
         return ResponseEntity.ok().body(response);
     }

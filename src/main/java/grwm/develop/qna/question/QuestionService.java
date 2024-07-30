@@ -73,10 +73,18 @@ public class QuestionService {
                 .title(request.title())
                 .content(request.content())
                 .member(member)
-                .category(
-                        Category.valueOf(request.category())
-                )
+                .category(getCategory(request.category()))
                 .build();
+    }
+
+    private Category getCategory(String category) {
+        if (category.equals("SKIN")) {
+            return Category.SKIN;
+        }
+        if (category.equals("HEALTH")) {
+            return Category.HEALTH;
+        }
+        return Category.NUTRIENTS;
     }
 
     public QuestionDetailResponse readQuestion(Long questionId) {
