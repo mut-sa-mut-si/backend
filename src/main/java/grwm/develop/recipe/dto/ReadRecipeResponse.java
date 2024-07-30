@@ -1,6 +1,7 @@
 package grwm.develop.recipe.dto;
 
 import grwm.develop.member.Member;
+import grwm.develop.recipe.Recipe;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.review.Review;
@@ -12,14 +13,16 @@ public record ReadRecipeResponse(Long id, String title, String content, int reci
                                  FindMember member,
                                  List<FindImage> images,
                                  List<FindHashtag> hashtags,
-                                 List<FindReview> reviews) {
+                                 List<FindReview> reviews,
+                                 String category) {
     public static ReadRecipeResponse of(Long id, String title, String content, int recipeCount, int reviewCount,
                                         float ratingAverage,
                                         boolean isClickedScrap,
                                         Member member,
                                         List<Image> images,
                                         List<Hashtag> hashtags,
-                                        List<Review> reviews) {
+                                        List<Review> reviews,
+                                        Recipe recipe) {
         return new ReadRecipeResponse(id, title, content,
                 recipeCount,
                 reviewCount,
@@ -35,11 +38,13 @@ public record ReadRecipeResponse(Long id, String title, String content, int reci
                                 hashtag.getId(),
                                 hashtag.getContent())).toList(),
                 reviews.stream().map(review ->
-                        new FindReview(
-                                review.getId(),
-                                review.getContent(),
-                                review.getRating(),
-                                new FindMember(review.getMember().getId(), review.getMember().getName()))).toList()
+                                new FindReview(
+                                        review.getId(),
+                                        review.getContent(),
+                                        review.getRating(),
+                                        new FindMember(review.getMember().getId(), review.getMember().getName())))
+                        .toList(),
+                recipe.getCategory().name()
         );
     }
 

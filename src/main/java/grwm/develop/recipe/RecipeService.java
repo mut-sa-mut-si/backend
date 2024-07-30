@@ -173,11 +173,11 @@ public class RecipeService {
         float ratingAverage = averageRating(reviews);
         if (member == null) {
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, false, writer, images, hashtags, reviews);
+                    reviewCount, ratingAverage, false, writer, images, hashtags, reviews, recipe);
         } else {
             boolean isClickedScrap = scrapRepository.existsByMemberIdAndRecipeId(member.getId(), recipe.getId());
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, isClickedScrap, writer, images, hashtags, reviews);
+                    reviewCount, ratingAverage, isClickedScrap, writer, images, hashtags, reviews, recipe);
         }
 
     }
