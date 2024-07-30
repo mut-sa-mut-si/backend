@@ -10,7 +10,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     List<Question> findAllByMember(Member member);
 
-    List<Question> searchQuestionsByContent(String keyword);
+    List<Question> findByTitleContaining(String keyword);
 
-    List<Question> searchQuestionsByTitle(String keyword);
+    List<Question> findByContentContaining(String keyword);
 }

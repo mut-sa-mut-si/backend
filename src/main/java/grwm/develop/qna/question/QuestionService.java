@@ -37,6 +37,7 @@ public class QuestionService {
     private List<QuestionMainResponse.WaitingAnswerQuestion> getWaitingAnswerQuestions(List<Question> questions) {
         List<Question> waitingAnswerQuestions = questions.stream()
                 .filter(question -> answerRepository.findFirstByQuestion(question).isEmpty())
+                .filter()
                 .sorted(Comparator.comparing(Question::getCreatedAt))
                 .limit(5)
                 .toList();
@@ -118,8 +119,8 @@ public class QuestionService {
     }
 
     public SearchQuestionResponse searchQuestions(String keyword) {
-        List<Question> contentMatches = questionRepository.searchQuestionsByContent(keyword);
-        List<Question> titleMatches = questionRepository.searchQuestionsByTitle(keyword);
+        List<Question> contentMatches = questionRepository.findByContentContaining(keyword);
+        List<Question> titleMatches = questionRepository.findByTitleContaining(keyword);
 
         List<SearchQuestion> questions = getSearchQuestions(contentMatches, titleMatches);
 
