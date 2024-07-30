@@ -4,7 +4,6 @@ import grwm.develop.auth.security.UserDetailsImpl;
 import grwm.develop.qna.dto.QuestionDetailResponse;
 import grwm.develop.qna.dto.QuestionMainResponse;
 import grwm.develop.qna.question.dto.SearchMyQuestionResponse;
-import grwm.develop.qna.question.dto.SearchQuestionRequest;
 import grwm.develop.qna.question.dto.SearchQuestionResponse;
 import grwm.develop.qna.question.dto.WriteQuestionRequest;
 import lombok.RequiredArgsConstructor;
@@ -48,8 +47,8 @@ public class QuestionController {
 
     @GetMapping("/search")
     public ResponseEntity<SearchQuestionResponse> searchQuestions(@RequestParam("keyword") String keyword) {
-        SearchQuestionRequest request = new SearchQuestionRequest(keyword);
-        return ResponseEntity.ok().body(questionService.searchQuestions(request));
+        SearchQuestionResponse response = questionService.searchQuestions(keyword);
+        return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/my-question")

@@ -9,7 +9,6 @@ import grwm.develop.qna.dto.QuestionDetailResponse.AnswerDetail;
 import grwm.develop.qna.dto.QuestionDetailResponse.QuestionDetail;
 import grwm.develop.qna.dto.QuestionMainResponse;
 import grwm.develop.qna.question.dto.SearchMyQuestionResponse;
-import grwm.develop.qna.question.dto.SearchQuestionRequest;
 import grwm.develop.qna.question.dto.SearchQuestionResponse;
 import grwm.develop.qna.question.dto.SearchQuestionResponse.SearchQuestion;
 import grwm.develop.qna.question.dto.WriteQuestionRequest;
@@ -110,25 +109,23 @@ public class QuestionService {
                 .toList();
     }
 
-    public SearchQuestionResponse searchQuestions(SearchQuestionRequest request) {
-        List<Question> contentMatches = questionRepository.searchQuestionsByContent(request.keyword());
-        List<Question> titleMatches = questionRepository.searchQuestionsByTitle(request.keyword());
+    public SearchQuestionResponse searchQuestions(String keyword) {
+        List<Question> contentMatches = questionRepository.searchQuestionsByContent(keyword);
+        List<Question> titleMatches = questionRepository.searchQuestionsByTitle(keyword);
 
         List<SearchQuestion> questions = getSearchQuestions(contentMatches, titleMatches);
 
-        return new SearchQuestionResponse(request.keyword(), questions);
+        return new SearchQuestionResponse(keyword, questions);
     }
 
     private static List<SearchQuestion> getSearchQuestions(List<Question> contentMatches, List<Question> titleMatches) {
         List<SearchQuestion> questions = new ArrayList<>();
         questions.addAll(contentMatches.stream()
-                .map(q -> new SearchQuestion(q.getId(),
-                        new SearchQuestionResponse.Question(q.getId(), q.getTitle(), q.getContent())))
+                .map(q -> new SearchQuestion(q.getId(), q.getTitle(), q.getContent()))
                 .toList());
         questions.addAll(titleMatches.stream()
                 .filter(q -> !contentMatches.contains(q))
-                .map(q -> new SearchQuestion(q.getId(),
-                        new SearchQuestionResponse.Question(q.getId(), q.getTitle(), q.getContent())))
+                .map(q -> new SearchQuestion(q.getId(), q.getTitle(), q.getContent()))
                 .toList());
         return questions;
     }
