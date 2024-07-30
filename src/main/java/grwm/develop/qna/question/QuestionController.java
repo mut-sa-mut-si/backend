@@ -38,7 +38,7 @@ public class QuestionController {
         return ResponseEntity.ok().body("ok");
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<QuestionDetailResponse> clickQuestion(@PathVariable(name = "id") Long id) {
         QuestionDetailResponse response = questionService.readQuestion(id);
         return ResponseEntity.ok().body(response);

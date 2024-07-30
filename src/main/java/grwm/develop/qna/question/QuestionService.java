@@ -28,7 +28,7 @@ public class QuestionService {
     private final AnswerRepository answerRepository;
 
     public QuestionMainResponse getMainPage(String category) {
-        List<Question> questions = questionRepository.findAllByCategory(category);
+        List<Question> questions = questionRepository.findAllByCategory(getCategory(category));
         List<QuestionMainResponse.WaitingAnswerQuestion> waitingAnswerQuestions = getWaitingAnswerQuestions(questions);
         List<QuestionMainResponse.CategoryQuestion> categoryQuestions = getCategoryQuestions(questions);
         return new QuestionMainResponse(waitingAnswerQuestions, categoryQuestions);
@@ -99,21 +99,21 @@ public class QuestionService {
         return new QuestionDetailResponse(questionDetail, answerDetails);
     }
 
-    private static QuestionDetail getQuestionDetail(Question question) {
+    private QuestionDetail getQuestionDetail(Question question) {
         return new QuestionDetail(
                 question.getId(),
                 question.getTitle(),
                 question.getContent(),
-                question.getMember()
+                new QuestionDetailResponse.MemberDTO(question.getMember().getId(), question.getMember().getName())
         );
     }
 
-    private static List<AnswerDetail> getAnswerDetails(List<Answer> answers) {
+    private List<AnswerDetail> getAnswerDetails(List<Answer> answers) {
         return answers.stream()
                 .map(answer -> new AnswerDetail(
                         answer.getId(),
                         answer.getContent(),
-                        answer.getMember()))
+                        new QuestionDetailResponse.MemberDTO(answer.getMember().getId(), answer.getMember().getName())))
                 .toList();
     }
 
@@ -126,7 +126,7 @@ public class QuestionService {
         return new SearchQuestionResponse(keyword, questions);
     }
 
-    private static List<SearchQuestion> getSearchQuestions(List<Question> contentMatches, List<Question> titleMatches) {
+    private List<SearchQuestion> getSearchQuestions(List<Question> contentMatches, List<Question> titleMatches) {
         List<SearchQuestion> questions = new ArrayList<>();
         questions.addAll(contentMatches.stream()
                 .map(q -> new SearchQuestion(q.getId(), q.getTitle(), q.getContent()))

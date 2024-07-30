@@ -1,6 +1,5 @@
 package grwm.develop.qna.dto;
 
-import grwm.develop.member.Member;
 import java.util.List;
 
 public record QuestionDetailResponse(
@@ -8,14 +7,19 @@ public record QuestionDetailResponse(
         List<AnswerDetail> answers) {
 
     public record QuestionDetail(
-            Long Id,
-            String Title,
-            String Content,
-            Member Member
-    ) {}
+            Long id,
+            String title,
+            String content,
+            MemberDTO member
+    ) {
+    }
 
     public record AnswerDetail(
-            Long Id,
-            String Content,
-            Member Member) {}
+            Long id,
+            String content,
+            MemberDTO member) {
+    }
+
+    public record MemberDTO(Long id, String name) {
+    }
 }
