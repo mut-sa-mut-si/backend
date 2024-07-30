@@ -25,6 +25,8 @@ import jakarta.persistence.EntityNotFoundException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -289,6 +291,8 @@ public class RecipeService {
         for (Review review : reviews) {
             total += review.getRating();
         }
-        return total / (float) reviews.size();
+        BigDecimal decimal = new BigDecimal(total / (float) reviews.size())
+                .setScale(1, RoundingMode.HALF_UP);
+        return decimal.floatValue();
     }
 }
