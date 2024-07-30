@@ -91,10 +91,10 @@ public class RecipeService {
     }
 
     private Category getCategory(String inputCategory) {
-        if (inputCategory.equals("피부미용")) {
+        if (inputCategory.equals("SKIN")) {
             return Category.SKIN;
         }
-        if (inputCategory.equals("헬스")) {
+        if (inputCategory.equals("HEALTH")) {
             return Category.HEALTH;
         }
         return Category.NUTRIENTS;
