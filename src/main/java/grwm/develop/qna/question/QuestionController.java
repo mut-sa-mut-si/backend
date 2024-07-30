@@ -24,9 +24,18 @@ public class QuestionController {
 
     private final QuestionService questionService;
 
-    @GetMapping
+    @GetMapping("/unauthentication")
     public ResponseEntity<QuestionMainResponse> mainQuestionPage(@RequestParam("category") String category) {
         QuestionMainResponse response = questionService.getMainPage(category);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/authentication")
+    public ResponseEntity<QuestionMainResponse> mainQuestionPageLoggedIn(
+            @RequestParam("category") String category,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        QuestionMainResponse response = questionService.getMainPageLoggedIn(category, userDetails.member());
         return ResponseEntity.ok().body(response);
     }
 

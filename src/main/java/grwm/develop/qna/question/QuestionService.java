@@ -34,10 +34,38 @@ public class QuestionService {
         return new QuestionMainResponse(waitingAnswerQuestions, categoryQuestions);
     }
 
+    public QuestionMainResponse getMainPageLoggedIn(String category, Member member) {
+        List<Question> questions = questionRepository.findAllByCategory(getCategory(category));
+        List<QuestionMainResponse.WaitingAnswerQuestion> waitingAnswerQuestions =
+                getWaitingAnswerQuestionsWithOutMine(questions, member);
+        List<QuestionMainResponse.CategoryQuestion> categoryQuestions = getCategoryQuestions(questions);
+        return new QuestionMainResponse(waitingAnswerQuestions, categoryQuestions);
+    }
+
+    private List<QuestionMainResponse.WaitingAnswerQuestion> getWaitingAnswerQuestionsWithOutMine(
+            List<Question> questions,
+            Member member
+    ) {
+        List<Question> waitingAnswerQuestions = questions.stream()
+                .filter(question -> answerRepository.findFirstByQuestion(question).isEmpty())
+                .filter(question -> !question.getMember().getId().equals(member.getId()))
+                .sorted(Comparator.comparing(Question::getCreatedAt))
+                .limit(5)
+                .toList();
+
+        return waitingAnswerQuestions.stream()
+                .map(question -> new QuestionMainResponse.WaitingAnswerQuestion(
+                        question.getId(),
+                        question.getTitle(),
+                        question.getContent(),
+                        new QuestionMainResponse.Writer(question.getMember().getId(), question.getMember().getName())
+                ))
+                .toList();
+    }
+
     private List<QuestionMainResponse.WaitingAnswerQuestion> getWaitingAnswerQuestions(List<Question> questions) {
         List<Question> waitingAnswerQuestions = questions.stream()
                 .filter(question -> answerRepository.findFirstByQuestion(question).isEmpty())
-                .filter()
                 .sorted(Comparator.comparing(Question::getCreatedAt))
                 .limit(5)
                 .toList();
