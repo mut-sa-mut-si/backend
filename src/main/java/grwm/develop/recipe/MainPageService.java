@@ -11,6 +11,7 @@ import grwm.develop.recipe.hashtag.HashtagRepository;
 import grwm.develop.recipe.image.ImageRepository;
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MainPageService {
+
+    @Getter
+    @AllArgsConstructor
+    public class Pair<K, V> {
+        private K key;
+        private V value;
+    }
 
     static final int recommendRecipeCount = 6;
     static final int popularReciperCount = 3;
@@ -40,13 +48,13 @@ public class MainPageService {
             for (Recipe recipe : recipes) {
                 reviews.addAll(reviewRepository.findAllByRecipeId(recipe.getId()));
             }
-            averageRating(reviews);
+            averageRatingOfReview(reviews);
 
             recipers.add(new MainPageResponse.FindReciper(
                     rank,
                     recipes.size(),
                     reviews.size(),
-                    averageRating(reviews),
+                    averageRatingOfReview(reviews),
                     new MainPageResponse.FindMember(member.getId(), member.getName())));
             rank++;
         }
@@ -62,7 +70,7 @@ public class MainPageService {
                             recipe.getTitle(),
                             imageRepository.findByRecipeId(recipe.getId()).getUrl(),
                             reviewRepository.findAllByRecipeId(recipe.getId()).size(),
-                            averageRating(reviewRepository.findAllByRecipeId(recipe.getId())),
+                            averageRatingOfReview(reviewRepository.findAllByRecipeId(recipe.getId())),
                             new MainPageResponse.FindMember(recipe.getMember().getId(),
                                     recipe.getMember().getName())));
         }
@@ -97,57 +105,58 @@ public class MainPageService {
         List<MainPageResponse.FindReciper> recipers = buildFindReciperList(popularRecipers);
         List<MainPageResponse.RecommendRecipe> recommendRecipes = buildRecommendRecipeList(popularRecipes);
         List<MainPageResponse.RecipeReview> reviews = buildRecipeReviewList(popularReviews);
+
         mainPageResponse.plusRecipers(recipers);
-        mainPageResponse.plusReviews(reviews);
         mainPageResponse.plusRecipes(recommendRecipes);
+        mainPageResponse.plusReviews(reviews);
         return mainPageResponse;
     }
 
     public MainPageResponse findMainPage(Member member) {
-        int totalRecipeCount = recipeRepository.findAll().size();//총레시피 추가
-        List<Member> popularRecipers = findRecipers(popularReciperCount);
+        int totalRecipeCount = recipeRepository.findAll().size();
+        List<Member> popularRecipers = findPopularRecipers(popularReciperCount);
         List<Recipe> recommendRecipes = findRecommendRecipes(member, recommendRecipeCount);
         List<Review> recipeReviews = findReviews(popularReviewCount);
-        if (member != null) {
-            Long joinDate = ChronoUnit.DAYS.between(member.getCreatedAt(), LocalDateTime.now());
-            String profileMemberName = member.getName();
-            return buildMainPageResponse(totalRecipeCount, joinDate, profileMemberName,
-                    popularRecipers, recommendRecipes, recipeReviews);
-        } else {
-            return buildMainPageResponse(totalRecipeCount, null, null,
-                    popularRecipers, recommendRecipes, recipeReviews);
-        }
-
+        Long joinDate = member != null ? ChronoUnit.DAYS.between(member.getCreatedAt(), LocalDateTime.now()) : null;
+        String profileMemberName = member != null ? member.getName() : null;
+        return buildMainPageResponse(totalRecipeCount, joinDate, profileMemberName,
+                popularRecipers, recommendRecipes, recipeReviews);
     }
 
-    private List<Member> findRecipers(int reciperCount) {
+    private List<Member> findPopularRecipers(int reciperCount) {
         List<Member> members = memberRepository.findAll();
-        Map<Float, Member> popularRecipers = new HashMap<>();
-        for (Member member : members) {
-            List<Recipe> recipes = recipeRepository.findAllByMemberId(member.getId());//멤버와 관련된 레시피 찾기
-            List<Review> reviews = new ArrayList<>();//모든 리뷰를 저장할 리스트
-            for (Recipe recipe : recipes) {
-                List<Review> reviewOfRecipe = reviewRepository.findAllByRecipeId(recipe.getId());//레시피와 관련된 리뷰 찾기
-                reviews.addAll(reviewOfRecipe);//여기에 저장
-            }
-            popularRecipers.put(averageRating(reviews), member);//점수와 관련된 멤버 다 추가
-            reviews.clear();
-        }
-        List<Member> topRecipers = popularRecipers.entrySet()
-                .stream()
-                .sorted(Map.Entry.<Float, Member>comparingByKey().reversed())
-                .limit(reciperCount)
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
-        return topRecipers;
+        return bestRecipers(members).stream().limit(reciperCount).collect(Collectors.toList());
     }
 
     private List<Recipe> findRecommendRecipes(Member member, int recipeCount) {
+        List<Recipe> recipes = new ArrayList<>();
+        if (member == null) {//만약에 로그인을 안했던 유저라면 랜덤으로 6개 반환하기
+            return findRandomValueList(recipeRepository.findAll(), recipeCount);
+        }
+        Map<Category, List<Onboard>> memberOnboard = classifyOnboard(member);
+        for (Category category : memberOnboard.keySet()) {
+            List<Recipe> recipeList = recipeRepository.findAllByCategory(category);
+            List<Onboard> onboards = memberOnboard.get(category);
+            recipes.addAll(bestRecipe(recipeList, onboards, recipeCount / memberOnboard.size()));
+        }
+        return recipes;
+    }
+
+    private List<Review> findReviews(int reviewCount) {
+        List<Review> reviews = reviewRepository.findAll();
+        return findRandomValueList(reviews, reviewCount);
+    }
+
+    private <T> List<T> findRandomValueList(List<T> list, int Count) {
+        Collections.shuffle(list);
+        return list.size() > Count ? list.subList(0, Count) : list;
+    }
+
+    private Map<Category, List<Onboard>> classifyOnboard(Member member) {
         List<Onboard> memberOnboard = onboardRepository.findAllByMemberId(member.getId());
         Map<Category, List<Onboard>> classify = new HashMap<>();
-        List<Recipe> recipes = new ArrayList<>();
         for (Onboard onboard : memberOnboard) {
-            if (classify.containsKey(onboard.getCategory())) {
+            if (classify.containsKey(onboard.getCategory().toString())) {
                 classify.get(onboard.getCategory()).add(onboard);
             } else {
                 List<Onboard> onboards = new ArrayList<>();
@@ -155,51 +164,38 @@ public class MainPageService {
                 classify.put(onboard.getCategory(), onboards);
             }
         }
-        for (Category category : classify.keySet()) {
-            List<Recipe> recipeList = recipeRepository.findAllByCategory(category);
-            List<Onboard> onboards = classify.get(category);
-            recipes.addAll(findBestRecipe(recipeList, onboards, recipeCount / classify.size()));
-        }
-        return recipes;
+        return classify;
     }
 
-    private List<Review> findReviews(int reviewCount) {
-        List<Review> reviews = reviewRepository.findAll();
-        Collections.shuffle(reviews);
-        return reviews.size() > reviewCount ? reviews.subList(0, reviewCount) : reviews;
-    }
-
-    private List<Recipe> findBestRecipe(List<Recipe> recipes, List<Onboard> onboards, int recipeCount) {
-        @Getter
-        class BestRecipe {
-            Recipe recipe;
-            float averageRating;
-
-            BestRecipe(Recipe recipe, float averageRating) {
-                this.recipe = recipe;
-                this.averageRating = averageRating;
-            }
-        }
-        List<Recipe> recipeList = new ArrayList<>();
-        Set<Recipe> recipeSet = new HashSet<>();
-        List<BestRecipe> bestRecipe = new ArrayList<>();
+    private List<Recipe> bestRecipe(List<Recipe> recipes, List<Onboard> onboards, int recipeCount) {
+        List<Pair<Float, Recipe>> bestRecipes = new ArrayList<>();
         for (Recipe recipe : recipes) {
             if (findRecipeOfOnboard(recipe, onboards)) {
-                recipeSet.add(recipe);
+                bestRecipes.add(new Pair<>(averageRatingOfReview(reviewRepository.findAllByRecipeId(recipe.getId())), recipe));
             }
         }
-        for (Recipe recipe : recipeSet) {
-            List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
-            bestRecipe.add(new BestRecipe(recipe, averageRating(reviews)));
-        }
-        Collections.sort(bestRecipe, (o1, o2) -> Float.compare(o2.averageRating, o1.averageRating));
-        for (int i = 0; i < recipeCount; i++) {
-            recipeList.add(bestRecipe.get(i).getRecipe());
-        }
-        return recipeList;
+        Collections.sort(bestRecipes, Comparator.comparing(Pair::getKey));
+        return bestRecipes.stream().limit(recipeCount).map(Pair::getValue).collect(Collectors.toList());
     }
 
-    private float averageRating(List<Review> reviews) {
+    private List<Member> bestRecipers(List<Member> members) {
+
+        List<Pair<Float, Member>> memberList = new ArrayList<>();
+        for (Member member : members) {
+            List<Recipe> recipes = recipeRepository.findAllByMemberId(member.getId());//멤버와 관련된 레시피 찾기
+            List<Review> reviews = new ArrayList<>();//모든 리뷰를 저장할 리스트
+            for (Recipe recipe : recipes) {
+                List<Review> reviewsOfRecipe = reviewRepository.findAllByRecipeId(recipe.getId());
+                reviews.addAll(reviewsOfRecipe);
+            }
+            memberList.add(new Pair<>(averageRatingOfReview(reviews), member));
+        }
+        Collections.sort(memberList, Comparator.comparing(Pair::getKey));
+        return memberList.stream().map(Pair::getValue).collect(Collectors.toList());
+    }
+
+    private float averageRatingOfReview(List<Review> reviews) {
+        if (reviews.isEmpty()) return 0;
         float total = 0f;
         for (Review review : reviews) {
             total += review.getRating();
@@ -210,13 +206,13 @@ public class MainPageService {
     private boolean findRecipeOfOnboard(Recipe recipe, List<Onboard> onboards) {
         List<Hashtag> hashtags = hashtagRepository.findAllByRecipeId(recipe.getId());
         for (Onboard onboard : onboards) {
-            if (recipe.getTitle().contains(onboard.getKeyword())) {
+            if (recipe.getTitle().contains(onboard.getKeyword().toString())) {
                 return true;
-            } else if (recipe.getContent().contains(onboard.getKeyword())) {
+            } else if (recipe.getContent().contains(onboard.getKeyword().toString())) {
                 return true;
             }
             for (Hashtag hashtag : hashtags) {
-                if (hashtag.getContent().contains(onboard.getKeyword())) {
+                if (hashtag.getContent().contains(onboard.getKeyword().toString())) {
                     return true;
                 }
             }
