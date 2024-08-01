@@ -123,7 +123,7 @@ public class RecipeService {
             List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
             RecipeListResponse.FindRecipe findRecipe = new RecipeListResponse.FindRecipe(recipe.getId(), reviews.size(),
                     averageRating(reviews), recipe.getTitle(),
-                    imageRepository.findByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList(),
+                    imageRepository.findAllByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList(),
                     recipe.isPublic(),
                     new RecipeListResponse.MemberDetail(recipe.getMember().getId(), recipe.getMember().getName()));
             recipeListResponse.plus(findRecipe);
