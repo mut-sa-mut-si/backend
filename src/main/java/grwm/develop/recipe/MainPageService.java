@@ -11,15 +11,19 @@ import grwm.develop.recipe.hashtag.HashtagRepository;
 import grwm.develop.recipe.image.ImageRepository;
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -72,7 +76,7 @@ public class MainPageService {
                     new MainPageResponse.RecommendRecipe(
                             recipe.getId(),
                             recipe.getTitle(),
-                            imageRepository.findByRecipeId(recipe.getId()).getUrl(),
+                            imageRepository.findByRecipeId(recipe.getId()).get(0).getUrl(),
                             reviewRepository.findAllByRecipeId(recipe.getId()).size(),
                             averageRatingOfReview(reviewRepository.findAllByRecipeId(recipe.getId())),
                             new MainPageResponse.FindMember(recipe.getMember().getId(),
@@ -87,7 +91,7 @@ public class MainPageService {
             reviews.add(new MainPageResponse.RecipeReview(
                     review.getId(),
                     review.getContent(),
-                    Math.round(review.getRating()*10.0f)/10.0f,
+                    Math.round(review.getRating() * 10.0f) / 10.0f,
                     new MainPageResponse.FindRecipe(review.getRecipe().getId(),
                             review.getRecipe().getTitle()),
                     new MainPageResponse.FindMember(review.getMember().getId(),
@@ -175,7 +179,8 @@ public class MainPageService {
         List<Pair<Float, Recipe>> bestRecipes = new ArrayList<>();
         for (Recipe recipe : recipes) {
             if (findRecipeOfOnboard(recipe, onboards)) {
-                bestRecipes.add(new Pair<>(averageRatingOfReview(reviewRepository.findAllByRecipeId(recipe.getId())), recipe));
+                bestRecipes.add(
+                        new Pair<>(averageRatingOfReview(reviewRepository.findAllByRecipeId(recipe.getId())), recipe));
             }
         }
         Collections.sort(bestRecipes, Comparator.comparing(Pair::getKey));
@@ -199,7 +204,9 @@ public class MainPageService {
     }
 
     private float averageRatingOfReview(List<Review> reviews) {
-        if (reviews.isEmpty()) return 0;
+        if (reviews.isEmpty()) {
+            return 0;
+        }
         float total = 0f;
         for (Review review : reviews) {
             total += review.getRating();
@@ -211,7 +218,7 @@ public class MainPageService {
         List<Hashtag> hashtags = hashtagRepository.findAllByRecipeId(recipe.getId());
         for (Onboard onboard : onboards) {
             String keyword = onboard.getKeyword();
-           if (recipe.getContent().contains(keyword)||recipe.getContent().contains(keyword)) {
+            if (recipe.getContent().contains(keyword) || recipe.getContent().contains(keyword)) {
                 return true;
             }
             for (Hashtag hashtag : hashtags) {
