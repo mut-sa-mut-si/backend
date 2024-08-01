@@ -218,7 +218,7 @@ public class MainPageService {
         List<Hashtag> hashtags = hashtagRepository.findAllByRecipeId(recipe.getId());
         for (Onboard onboard : onboards) {
             String keyword = onboard.getKeyword();
-            if (recipe.getContent().contains(keyword) || recipe.getContent().contains(keyword)) {
+            if (recipe.getContent().contains(keyword)) {
                 return true;
             }
             for (Hashtag hashtag : hashtags) {
