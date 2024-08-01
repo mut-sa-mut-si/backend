@@ -18,8 +18,6 @@ public class MyPageManageService {
 
     public FindAllSubscribesResponse findAllSubscribes(Member member) {
         List<Subscribe> subscribes = subscribeRepository.findAllByMemberId(member.getId());
-        return FindAllSubscribesResponse.from(subscribes);
+        return FindAllSubscribesResponse.from(member.getId(), subscribes);
     }
-
-    
 }
