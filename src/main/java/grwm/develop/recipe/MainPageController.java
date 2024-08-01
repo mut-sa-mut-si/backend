@@ -14,15 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/main")
 public class MainPageController {
 
-    MainPageService mainPageService;
+    private final MainPageService mainPageService;
 
-    @GetMapping("authentication")
+    @GetMapping("/authentication")
     public ResponseEntity<MainPageResponse> mainPageLogin(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         MainPageResponse response = mainPageService.findMainPage(userDetails.member());
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("unauthentication")
+    @GetMapping("/unauthentication")
     public ResponseEntity<MainPageResponse> mainPage() {
         MainPageResponse response = mainPageService.findMainPage(null);
         return ResponseEntity.ok().body(response);

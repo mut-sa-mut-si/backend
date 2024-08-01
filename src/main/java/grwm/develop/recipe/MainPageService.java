@@ -13,31 +13,35 @@ import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
 public class MainPageService {
 
     @Getter
     @AllArgsConstructor
-    public class Pair<K, V> {
+    static class Pair<K, V> {
         private K key;
         private V value;
     }
 
-    static final int recommendRecipeCount = 6;
-    static final int popularReciperCount = 3;
-    static final int popularReviewCount = 3;
+    static final int RECOMMEND_RECIPECOUNT = 6;
+    static final int POPULAR_RECIPERCOUNT = 3;
+    static final int POPULAR_REVIEWCOUNT = 3;
 
-    RecipeRepository recipeRepository;
-    MemberRepository memberRepository;
-    ReviewRepository reviewRepository;
-    OnboardRepository onboardRepository;
-    HashtagRepository hashtagRepository;
-    ImageRepository imageRepository;
+    private final RecipeRepository recipeRepository;
+    private final MemberRepository memberRepository;
+    private final ReviewRepository reviewRepository;
+    private final OnboardRepository onboardRepository;
+    private final HashtagRepository hashtagRepository;
+    private final ImageRepository imageRepository;
 
     private List<MainPageResponse.FindReciper> buildFindReciperList(List<Member> popularRecipers) {
         int rank = 1;
@@ -83,7 +87,7 @@ public class MainPageService {
             reviews.add(new MainPageResponse.RecipeReview(
                     review.getId(),
                     review.getContent(),
-                    review.getRating(),
+                    Math.round(review.getRating()*10.0f)/10.0f,
                     new MainPageResponse.FindRecipe(review.getRecipe().getId(),
                             review.getRecipe().getTitle()),
                     new MainPageResponse.FindMember(review.getMember().getId(),
@@ -114,37 +118,37 @@ public class MainPageService {
 
     public MainPageResponse findMainPage(Member member) {
         int totalRecipeCount = recipeRepository.findAll().size();
-        List<Member> popularRecipers = findPopularRecipers(popularReciperCount);
-        List<Recipe> recommendRecipes = findRecommendRecipes(member, recommendRecipeCount);
-        List<Review> recipeReviews = findReviews(popularReviewCount);
+        List<Member> popularRecipers = findPopularRecipers();
+        List<Recipe> recommendRecipes = findRecommendRecipes(member);
+        List<Review> recipeReviews = findReviews();
         Long joinDate = member != null ? ChronoUnit.DAYS.between(member.getCreatedAt(), LocalDateTime.now()) : null;
         String profileMemberName = member != null ? member.getName() : null;
         return buildMainPageResponse(totalRecipeCount, joinDate, profileMemberName,
                 popularRecipers, recommendRecipes, recipeReviews);
     }
 
-    private List<Member> findPopularRecipers(int reciperCount) {
+    private List<Member> findPopularRecipers() {
         List<Member> members = memberRepository.findAll();
-        return bestRecipers(members).stream().limit(reciperCount).collect(Collectors.toList());
+        return bestRecipers(members).stream().limit(POPULAR_RECIPERCOUNT).collect(Collectors.toList());
     }
 
-    private List<Recipe> findRecommendRecipes(Member member, int recipeCount) {
+    private List<Recipe> findRecommendRecipes(Member member) {
         List<Recipe> recipes = new ArrayList<>();
         if (member == null) {//만약에 로그인을 안했던 유저라면 랜덤으로 6개 반환하기
-            return findRandomValueList(recipeRepository.findAll(), recipeCount);
+            return findRandomValueList(recipeRepository.findAll(), RECOMMEND_RECIPECOUNT);
         }
         Map<Category, List<Onboard>> memberOnboard = classifyOnboard(member);
         for (Category category : memberOnboard.keySet()) {
             List<Recipe> recipeList = recipeRepository.findAllByCategory(category);
             List<Onboard> onboards = memberOnboard.get(category);
-            recipes.addAll(bestRecipe(recipeList, onboards, recipeCount / memberOnboard.size()));
+            recipes.addAll(bestRecipe(recipeList, onboards, RECOMMEND_RECIPECOUNT / memberOnboard.size()));
         }
         return recipes;
     }
 
-    private List<Review> findReviews(int reviewCount) {
+    private List<Review> findReviews() {
         List<Review> reviews = reviewRepository.findAll();
-        return findRandomValueList(reviews, reviewCount);
+        return findRandomValueList(reviews, POPULAR_REVIEWCOUNT);
     }
 
     private <T> List<T> findRandomValueList(List<T> list, int Count) {
@@ -156,7 +160,7 @@ public class MainPageService {
         List<Onboard> memberOnboard = onboardRepository.findAllByMemberId(member.getId());
         Map<Category, List<Onboard>> classify = new HashMap<>();
         for (Onboard onboard : memberOnboard) {
-            if (classify.containsKey(onboard.getCategory().toString())) {
+            if (classify.containsKey(onboard.getCategory())) {
                 classify.get(onboard.getCategory()).add(onboard);
             } else {
                 List<Onboard> onboards = new ArrayList<>();
@@ -182,8 +186,8 @@ public class MainPageService {
 
         List<Pair<Float, Member>> memberList = new ArrayList<>();
         for (Member member : members) {
-            List<Recipe> recipes = recipeRepository.findAllByMemberId(member.getId());//멤버와 관련된 레시피 찾기
-            List<Review> reviews = new ArrayList<>();//모든 리뷰를 저장할 리스트
+            List<Recipe> recipes = recipeRepository.findAllByMemberId(member.getId());
+            List<Review> reviews = new ArrayList<>();
             for (Recipe recipe : recipes) {
                 List<Review> reviewsOfRecipe = reviewRepository.findAllByRecipeId(recipe.getId());
                 reviews.addAll(reviewsOfRecipe);
@@ -200,19 +204,18 @@ public class MainPageService {
         for (Review review : reviews) {
             total += review.getRating();
         }
-        return total / (float) reviews.size();
+        return Math.round((total / (float) reviews.size()) * 10.0f) / 10.0f;
     }
 
     private boolean findRecipeOfOnboard(Recipe recipe, List<Onboard> onboards) {
         List<Hashtag> hashtags = hashtagRepository.findAllByRecipeId(recipe.getId());
         for (Onboard onboard : onboards) {
-            if (recipe.getTitle().contains(onboard.getKeyword().toString())) {
-                return true;
-            } else if (recipe.getContent().contains(onboard.getKeyword().toString())) {
+            String keyword = onboard.getKeyword();
+           if (recipe.getContent().contains(keyword)||recipe.getContent().contains(keyword)) {
                 return true;
             }
             for (Hashtag hashtag : hashtags) {
-                if (hashtag.getContent().contains(onboard.getKeyword().toString())) {
+                if (hashtag.getContent().contains(onboard.getKeyword())) {
                     return true;
                 }
             }
