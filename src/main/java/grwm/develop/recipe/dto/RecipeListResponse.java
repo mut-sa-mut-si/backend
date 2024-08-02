@@ -33,7 +33,7 @@ public class RecipeListResponse {
         private int reviewCount;
         private float ratingAverage;
         private String title;
-        private List<String> images;
+        private String image;
         private boolean isPublic;
         private MemberDetail member;
 

@@ -3,7 +3,6 @@ package grwm.develop.member;
 import grwm.develop.recipe.Recipe;
 import grwm.develop.recipe.RecipeRepository;
 import grwm.develop.recipe.dto.RecipeListResponse;
-import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
@@ -11,6 +10,7 @@ import grwm.develop.recipe.scrap.Scrap;
 import grwm.develop.recipe.scrap.ScrapRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MyPageService {
 
     private final ScrapRepository scrapRepository;
@@ -32,7 +33,7 @@ public class MyPageService {
             List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
             RecipeListResponse.FindRecipe findRecipe = new RecipeListResponse.FindRecipe(recipe.getId(), reviews.size(),
                     averageRating(reviews), recipe.getTitle(),
-                    imageRepository.findAllByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList(),
+                    imageRepository.findByRecipeId(recipe.getId()).getUrl(),
                     recipe.isPublic(),
                     new RecipeListResponse.MemberDetail(recipe.getMember().getId(), recipe.getMember().getName()));
             recipeListResponse.plus(findRecipe);
