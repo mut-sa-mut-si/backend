@@ -74,5 +74,11 @@ public class RecipeController {
             recipeService.clickScrap(userDetails.member(),id);
             return ResponseEntity.ok().body("ok");
     }
+    @DeleteMapping("/{id}/scraps")
+    public ResponseEntity<String> deleteScrap(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                             @PathVariable("id")Long id){
+        recipeService.deleteScrap(userDetails.member(),id);
+        return ResponseEntity.ok().body("ok");
+    }
 
 }
