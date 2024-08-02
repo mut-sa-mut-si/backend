@@ -24,7 +24,7 @@ public class MyPageService {
 
     private final ScrapRepository scrapRepository;
     private final RecipeRepository recipeRepository;
-    private final ReviewRepository  reviewRepository;
+    private final ReviewRepository reviewRepository;
     private final ImageRepository imageRepository;
 
     private RecipeListResponse buildRecipeList(List<Recipe> recipes) {
@@ -41,23 +41,22 @@ public class MyPageService {
         return recipeListResponse;
     }
 
-    public RecipeListResponse myRecipeList(Member member)
-    {
+    public RecipeListResponse myRecipeList(Member member) {
         List<Recipe> recipes = recipeRepository.findAllByMemberId(member.getId());
         RecipeListResponse recipeListResponse = buildRecipeList(recipes);
         return recipeListResponse;
     }
-    public RecipeListResponse myScrapList(Member member)
-    {
+
+    public RecipeListResponse myScrapList(Member member) {
         List<Scrap> scrapList = scrapRepository.findAllByMemberId(member.getId());
         List<Recipe> recipes = new ArrayList<>();
-        for(Scrap scrap : scrapList)
-        {
+        for (Scrap scrap : scrapList) {
             recipes.add(scrap.getRecipe());
         }
         RecipeListResponse recipeListResponse = buildRecipeList(recipes);
         return recipeListResponse;
     }
+
     private float averageRating(List<Review> reviews) {
         float total = 0f;
         for (Review review : reviews) {

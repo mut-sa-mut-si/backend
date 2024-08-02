@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/members")
 public class MyPageController {
 
-    private final  MyPageService myPageService;
+    private final MyPageService myPageService;
 
     @GetMapping("/{id}/recipes")
     public ResponseEntity<RecipeListResponse> myPageRecipes(@AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -23,6 +23,7 @@ public class MyPageController {
         RecipeListResponse response = myPageService.myRecipeList(userDetails.member());
         return ResponseEntity.ok().body(response);
     }
+
     @GetMapping("/{id}/scraps")
     public ResponseEntity<RecipeListResponse> myPageScrap(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                                           @PathVariable Long id) {
