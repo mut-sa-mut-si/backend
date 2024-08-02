@@ -8,6 +8,7 @@ import grwm.develop.onboarding.OnboardRepository;
 import grwm.develop.recipe.dto.MainPageResponse;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.hashtag.HashtagRepository;
+import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
@@ -76,7 +77,7 @@ public class MainPageService {
                     new MainPageResponse.RecommendRecipe(
                             recipe.getId(),
                             recipe.getTitle(),
-                            imageRepository.findByRecipeId(recipe.getId()).get(0).getUrl(),
+                            imageExist(imageRepository.findAllByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList()),
                             reviewRepository.findAllByRecipeId(recipe.getId()).size(),
                             averageRatingOfReview(reviewRepository.findAllByRecipeId(recipe.getId())),
                             new MainPageResponse.FindMember(recipe.getMember().getId(),
@@ -228,5 +229,12 @@ public class MainPageService {
             }
         }
         return false;
+    }
+    private String imageExist(List<String> images) {
+        if (images.size() > 0) {
+            return images.get(0);
+        } else {
+            return null;
+        }
     }
 }
