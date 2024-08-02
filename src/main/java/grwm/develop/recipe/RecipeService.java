@@ -16,6 +16,7 @@ import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
+import grwm.develop.recipe.scrap.Scrap;
 import grwm.develop.recipe.scrap.ScrapRepository;
 import grwm.develop.subscribe.Subscribe;
 import grwm.develop.subscribe.SubscribeItem;
@@ -79,6 +80,12 @@ public class RecipeService {
         Review review = buildReview(member, writeReviewRequest, recipe);
         reviewRepository.save(review);
     }
+    @Transactional
+    public void clickScrap(Member member, Long id) {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        Scrap scrap = buildScrap(member, recipe);
+        scrapRepository.save(scrap);
+    }
 
     private Recipe buildRecipe(Member member, WriteRecipeRequest request) {
         return Recipe.builder().category(getCategory(request.category())).title(request.title())
@@ -104,7 +111,10 @@ public class RecipeService {
         return Review.builder().content(writeReviewRequest.content()).rating(writeReviewRequest.rating()).member(member)
                 .recipe(recipe).build();
     }
-
+    public Scrap buildScrap(Member member, Recipe recipe)
+    {
+        return Scrap.builder().member(member).recipe(recipe).build();
+    }
     private List<Recipe> buildSearchRecipeList(String keyword) {
         List<Recipe> recipesContent = recipeRepository.findByContentContaining(keyword);
         List<Recipe> recipesTitle = recipeRepository.findByTitleContaining(keyword);

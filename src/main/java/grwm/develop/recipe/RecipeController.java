@@ -68,4 +68,11 @@ public class RecipeController {
         return ResponseEntity.ok().body("ok");
     }
 
+    @PostMapping("/{id}/scraps")
+    public ResponseEntity<String> clickScrap(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                             @PathVariable("id")Long id){
+            recipeService.clickScrap(userDetails.member(),id);
+            return ResponseEntity.ok().body("ok");
+    }
+
 }
