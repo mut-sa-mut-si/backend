@@ -3,6 +3,7 @@ package grwm.develop.member;
 import grwm.develop.recipe.Recipe;
 import grwm.develop.recipe.RecipeRepository;
 import grwm.develop.recipe.dto.RecipeListResponse;
+import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.image.ImageRepository;
 import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
@@ -33,7 +34,7 @@ public class MyPageService {
             List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
             RecipeListResponse.FindRecipe findRecipe = new RecipeListResponse.FindRecipe(recipe.getId(), reviews.size(),
                     averageRating(reviews), recipe.getTitle(),
-                    imageRepository.findByRecipeId(recipe.getId()).getUrl(),
+                    imageExist(imageRepository.findAllByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList()),
                     recipe.isPublic(),
                     new RecipeListResponse.MemberDetail(recipe.getMember().getId(), recipe.getMember().getName()));
             recipeListResponse.plus(findRecipe);
@@ -67,5 +68,13 @@ public class MyPageService {
         }
         BigDecimal decimal = new BigDecimal(total / (float) reviews.size()).setScale(1, RoundingMode.HALF_UP);
         return decimal.floatValue();
+    }
+
+    private String imageExist(List<String> images) {
+        if (images.size() > 0) {
+            return images.get(0);
+        } else {
+            return null;
+        }
     }
 }

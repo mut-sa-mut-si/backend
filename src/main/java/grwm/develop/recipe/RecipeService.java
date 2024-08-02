@@ -23,6 +23,7 @@ import grwm.develop.subscribe.SubscribeItem;
 import grwm.develop.subscribe.SubscribeItemRepository;
 import grwm.develop.subscribe.SubscribeRepository;
 import jakarta.persistence.EntityNotFoundException;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,6 +82,7 @@ public class RecipeService {
         Review review = buildReview(member, writeReviewRequest, recipe);
         reviewRepository.save(review);
     }
+
     @Transactional
     public void clickScrap(Member member, Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
@@ -111,10 +114,11 @@ public class RecipeService {
         return Review.builder().content(writeReviewRequest.content()).rating(writeReviewRequest.rating()).member(member)
                 .recipe(recipe).build();
     }
-    public Scrap buildScrap(Member member, Recipe recipe)
-    {
+
+    public Scrap buildScrap(Member member, Recipe recipe) {
         return Scrap.builder().member(member).recipe(recipe).build();
     }
+
     private List<Recipe> buildSearchRecipeList(String keyword) {
         List<Recipe> recipesContent = recipeRepository.findByContentContaining(keyword);
         List<Recipe> recipesTitle = recipeRepository.findByTitleContaining(keyword);
@@ -133,7 +137,7 @@ public class RecipeService {
             List<Review> reviews = reviewRepository.findAllByRecipeId(recipe.getId());
             RecipeListResponse.FindRecipe findRecipe = new RecipeListResponse.FindRecipe(recipe.getId(), reviews.size(),
                     averageRating(reviews), recipe.getTitle(),
-                    imageRepository.findByRecipeId(recipe.getId()).getUrl(),
+                    imageExist(imageRepository.findAllByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList()),
                     recipe.isPublic(),
                     new RecipeListResponse.MemberDetail(recipe.getMember().getId(), recipe.getMember().getName()));
             recipeListResponse.plus(findRecipe);
@@ -273,5 +277,13 @@ public class RecipeService {
         }
         BigDecimal decimal = new BigDecimal(total / (float) reviews.size()).setScale(1, RoundingMode.HALF_UP);
         return decimal.floatValue();
+    }
+
+    private String imageExist(List<String> images) {
+        if (images.size() > 0) {
+            return images.get(0);
+        } else {
+            return null;
+        }
     }
 }
