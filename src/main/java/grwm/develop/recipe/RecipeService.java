@@ -83,9 +83,11 @@ public class RecipeService {
 
     @Transactional
     public void clickScrap(Member member, Long id) {
-        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        Scrap scrap = buildScrap(member, recipe);
-        scrapRepository.save(scrap);
+        if (!scrapRepository.existsByMemberIdAndRecipeId(member.getId(), id)) {
+            Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+            Scrap scrap = buildScrap(member, recipe);
+            scrapRepository.save(scrap);
+        }
     }
 
     @Transactional

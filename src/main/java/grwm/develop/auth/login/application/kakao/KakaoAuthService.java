@@ -10,20 +10,21 @@ import grwm.develop.auth.login.application.kakao.dto.KakaoMemberProfile;
 import grwm.develop.auth.login.properties.KakaoAuthProperties;
 import grwm.develop.member.Member;
 import grwm.develop.member.MemberRepository;
+import grwm.develop.subscribe.SubscribeItem;
+import grwm.develop.subscribe.SubscribeItemRepository;
 import jakarta.persistence.EntityExistsException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class KakaoAuthService implements AuthService {
 
     private final MemberRepository memberRepository;
+    private final SubscribeItemRepository subscribeItemRepository;
 
     private final KakaoAuthProperties authProperties;
 
@@ -33,16 +34,20 @@ public class KakaoAuthService implements AuthService {
     @Override
     @Transactional
     public Member authorization(String code) {
-        log.info("get token");
         String token = getAccessToken(code);
-        log.info("get token success");
-        log.info("get profile");
         KakaoMemberProfile profile = kakaoMemberInfoClient.getMemberProfile(TOKEN_PREFIX + token);
-        log.info("get profile success");
         Member member = profile.toEntity();
         try {
             checkedDuplicateEmail(member);
-            return memberRepository.save(member);
+            memberRepository.save(member);
+            if (!subscribeItemRepository.existsByMemberId(member.getId())) {
+                subscribeItemRepository.save(
+                        SubscribeItem.builder()
+                                .member(member)
+                                .price(1900)
+                                .build());
+            }
+            return member;
         } catch (EntityExistsException e) {
             return member;
         }

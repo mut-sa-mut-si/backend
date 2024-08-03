@@ -1,4 +1,6 @@
 package grwm.develop.auth.login.application.kakao.dto;
 
-public record KakaoAccount(String email, Profile profile) {
+import jakarta.annotation.Nullable;
+
+public record KakaoAccount(@Nullable String email, Profile profile) {
 }

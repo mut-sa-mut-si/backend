@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -96,10 +97,11 @@ public class RecipeController {
         recipeService.clickScrap(userDetails.member(), id);
         return ResponseEntity.ok().body("ok");
     }
+
     @DeleteMapping("/{id}/scraps")
     public ResponseEntity<String> deleteScrap(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                             @PathVariable("id")Long id){
-        recipeService.deleteScrap(userDetails.member(),id);
+                                              @PathVariable("id") Long id) {
+        recipeService.deleteScrap(userDetails.member(), id);
         return ResponseEntity.ok().body("ok");
     }
 
