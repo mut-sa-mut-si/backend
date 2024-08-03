@@ -23,7 +23,6 @@ import grwm.develop.subscribe.SubscribeItem;
 import grwm.develop.subscribe.SubscribeItemRepository;
 import grwm.develop.subscribe.SubscribeRepository;
 import jakarta.persistence.EntityNotFoundException;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -204,6 +202,16 @@ public class RecipeService {
 
     public RecipeListResponse findRecipeList(Member member, String category) {
         List<Recipe> recipes = recipeRepository.findAllByCategory(getCategoryEnum(category));
+        RecipeListResponse recipeListResponse = buildRecipeList(recipes);
+        if (member == null) {
+            return recipeListResponse;
+        } else {
+            return isSubscribeList(recipeListResponse, member);
+        }
+    }
+
+    public RecipeListResponse findDefaultRecipes(Member member) {
+        List<Recipe> recipes = recipeRepository.findAll();
         RecipeListResponse recipeListResponse = buildRecipeList(recipes);
         if (member == null) {
             return recipeListResponse;

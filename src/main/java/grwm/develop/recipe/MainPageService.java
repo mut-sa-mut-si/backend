@@ -76,7 +76,7 @@ public class MainPageService {
                     new MainPageResponse.RecommendRecipe(
                             recipe.getId(),
                             recipe.getTitle(),
-                            imageRepository.findByRecipeId(recipe.getId()).get(0).getUrl(),
+                            imageRepository.findAllByRecipeId(recipe.getId()).get(0).getUrl(),
                             reviewRepository.findAllByRecipeId(recipe.getId()).size(),
                             averageRatingOfReview(reviewRepository.findAllByRecipeId(recipe.getId())),
                             new MainPageResponse.FindMember(recipe.getMember().getId(),
@@ -199,7 +199,7 @@ public class MainPageService {
             }
             memberList.add(new Pair<>(averageRatingOfReview(reviews), member));
         }
-        Collections.sort(memberList, Comparator.comparing(Pair::getKey));
+        memberList.sort((pair1, pair2) -> Float.compare(pair2.getKey(), pair1.getKey()));
         return memberList.stream().map(Pair::getValue).collect(Collectors.toList());
     }
 
