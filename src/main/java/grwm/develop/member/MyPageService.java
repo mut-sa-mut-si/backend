@@ -1,5 +1,6 @@
 package grwm.develop.member;
 
+import grwm.develop.mypage.dto.FindMyPageMineResponse;
 import grwm.develop.mypage.dto.FindMyPageResponse;
 import grwm.develop.recipe.Recipe;
 import grwm.develop.recipe.RecipeRepository;
@@ -47,6 +48,10 @@ public class MyPageService {
         } else {
             return FindMyPageResponse.of(true, false, member);
         }
+    }
+
+    public FindMyPageMineResponse findMyPageMine(Member member) {
+        return FindMyPageMineResponse.of(member);
     }
 
     private RecipeListResponse buildRecipeList(List<Recipe> recipes) {

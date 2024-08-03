@@ -1,6 +1,7 @@
 package grwm.develop.member;
 
 import grwm.develop.auth.security.UserDetailsImpl;
+import grwm.develop.mypage.dto.FindMyPageMineResponse;
 import grwm.develop.mypage.dto.FindMyPageResponse;
 import grwm.develop.recipe.dto.RecipeListResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class MyPageController {
 
     private final MyPageService myPageService;
+
+    @GetMapping
+    public ResponseEntity<FindMyPageMineResponse> myPageMine(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        FindMyPageMineResponse response = myPageService.findMyPageMine(userDetails.member());
+        return ResponseEntity.ok().body(response);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<FindMyPageResponse> myPage(@PathVariable(name = "id") Long id,
