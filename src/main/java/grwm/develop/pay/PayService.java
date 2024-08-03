@@ -1,59 +1,103 @@
 package grwm.develop.pay;
 
 import grwm.develop.member.Member;
-import java.util.HashMap;
-import java.util.Map;
+import grwm.develop.member.MemberRepository;
+import grwm.develop.pay.dto.PayApproveRequest;
+import grwm.develop.pay.dto.PayInfoRequest;
+import grwm.develop.pay.dto.PaymentRequest;
+import grwm.develop.pay.dto.PaymentResponse;
+import grwm.develop.subscribe.Subscribe;
+import grwm.develop.subscribe.SubscribeItem;
+import grwm.develop.subscribe.SubscribeItemRepository;
+import grwm.develop.subscribe.SubscribeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PayService {
 
     private final PayClient payClient;
+    private PayInfo payInfo;
+    private MemberInfo memberInfo;
+    private final MemberRepository memberRepository;
+    private final SubscribeRepository subscribeRepository;
+    private final SubscribeItemRepository subscribeItemRepository;
 
-    public Map<String, Object> beforePay(String type, PayInfoRequest request, Member member) {
+    public String beforePay(PayInfoRequest request, Member member) {
         int quantity = 1;
-        int[] amounts = amount(type);
-        int totalAmount = amounts[0];
-        int taxFreeAmount = amounts[1];
-        Map<String, String> params = getPayInfo(request, member, quantity, totalAmount, taxFreeAmount);
-        String adminKey = "adminKey 넣기";
-        String authorization = "KakaoAK " + adminKey;
-        return payClient.beforePay(authorization, params);
+        String orderId = "123456789";
+        String cid = "TC0ONETIME";
+        PaymentRequest paymentRequest = getPaymentRequest(request, member, quantity, cid, orderId);
+        String secretKey = "SECRET_KEY DEVE8ED784F13A714C623A9D1C3DC2541EB1C784";
+
+        PaymentResponse response = payClient.beforePay(secretKey, paymentRequest);
+        creatPayInfo(member, cid, orderId, response);
+        createMemberInfo(request, member);
+
+        return response.nextRedirectPcUrl();
     }
 
-    private static Map<String, String> getPayInfo(PayInfoRequest request,
-                                                  Member member,
-                                                  int quantity,
-                                                  int totalAmount,
-                                                  int taxFreeAmount) {
-        Map<String, String> params = new HashMap<>();
-        params.put("cid", "가맹점 코드");
-        params.put("partner_order_id", request.orderId());
-        params.put("partner_user_id", String.valueOf(member.getId()));
-        params.put("item_name", request.itemName());
-        params.put("quantity", String.valueOf(quantity));
-        params.put("total_amount", String.valueOf(totalAmount));
-        params.put("tax_free_amount", String.valueOf(taxFreeAmount));
-        params.put("approval_url", "http://localhost:8080/api/v1/payment/success");
-        params.put("cancel_url", "http://localhost:8080/api/v1/payment/cancel");
-        params.put("fail_url", "http://localhost:8080/api/v1/payment/fail");
-        return params;
+    private void createMemberInfo(PayInfoRequest request, Member member) {
+        memberInfo = new MemberInfo();
+        memberInfo.setMemberId(request.memberId());
+        memberInfo.setSubscribeId(member.getId());
     }
 
-    private int[] amount(String type) {
-        int[] amounts = new int[2];
-        if (type.equals("SUBSCRIBE")) {
-            amounts[0] = 1900;     //임의로 작성
-            amounts[1] = 100;    //임의로 작성
-            return amounts;
-        }
-        if (type.equals("RECIPE")) {
-            amounts[0] = 500;     //임의로 작성
-            amounts[1] = 10;    //임의로 작성
-            return amounts;
-        }
-        return amounts;
+    private void creatPayInfo(Member member, String cid, String orderId, PaymentResponse response) {
+        payInfo = new PayInfo();
+        payInfo.setCid(cid);
+        payInfo.setOrderId(orderId);
+        payInfo.setUserId(String.valueOf(member.getId()));
+        payInfo.setTid(response.tid());
+    }
+
+    private static PaymentRequest getPaymentRequest(PayInfoRequest request,
+                                                    Member member,
+                                                    int quantity,
+                                                    String cid,
+                                                    String orderId) {
+        return new PaymentRequest(
+                cid,
+                orderId,
+                String.valueOf(member.getId()),
+                request.itemName(),
+                quantity,
+                request.totalAmount(),
+                request.totalAmount(),
+                "http://localhost:8080/api/v1/payment/redirect",
+                "http://localhost:8080/api/v1/payment/cancel",
+                "http://localhost:8080/api/v1/payment/fail"
+        );
+    }
+
+    public void afterPay(String pgToken, Long memberId, Long subscribeId) {
+        PayApproveRequest payApproveRequest = getApproveRequest(pgToken);
+        String secretKey = "SECRET_KEY DEVE8ED784F13A714C623A9D1C3DC2541EB1C784";
+        payClient.afterPay(secretKey, payApproveRequest);
+        createSubscribe(memberId, subscribeId);
+    }
+
+    private void createSubscribe(Long memberId, Long subscribeId) {
+        Member member = memberRepository.findById(subscribeId)
+                .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
+        SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(memberId);
+        Subscribe subscribe = Subscribe.builder()
+                .member(member)
+                .subscribeItem(subscribeItem)
+                .build();
+        subscribeRepository.save(subscribe);
+    }
+
+    private PayApproveRequest getApproveRequest(String pgToken) {
+        return new PayApproveRequest(
+                payInfo.getCid(),
+                payInfo.getTid(),
+                payInfo.getOrderId(),
+                payInfo.getUserId(),
+                pgToken
+        );
     }
 }
