@@ -130,11 +130,12 @@ public class RecipeService {
         List<Recipe> recipesTitle = recipeRepository.findByTitleContaining(keyword);
         List<Hashtag> hashtags = hashtagRepository.findByContentContaining(keyword);
         List<Recipe> recipesHashtag = new ArrayList<>();
+        List<Recipe> recipesName = findRecipeContainingName(recipeRepository.findAll(), keyword);
         for (Hashtag hashtag : hashtags) {
             Recipe recipe = hashtag.getRecipe();
             recipesHashtag.add(recipe);
         }
-        return integrateRecipe(recipesContent, recipesTitle, recipesHashtag);
+        return integrateRecipe(recipesContent, recipesTitle, recipesHashtag, recipesName);
     }
 
     private RecipeListResponse buildRecipeList(List<Recipe> recipes) {
@@ -273,13 +274,14 @@ public class RecipeService {
     }
 
     public List<Recipe> integrateRecipe(List<Recipe> recipesContent, List<Recipe> recipesHashtag,
-                                        List<Recipe> recipesTitle) {
+                                        List<Recipe> recipesTitle,
+                                        List<Recipe> recipesName) {
         Set<Recipe> recipeSet = new LinkedHashSet<>();
 
         recipeSet.addAll(recipesContent);
         recipeSet.addAll(recipesHashtag);
         recipeSet.addAll(recipesTitle);
-
+        recipeSet.addAll(recipesName);
         return new ArrayList<>(recipeSet);
     }
 
@@ -301,5 +303,15 @@ public class RecipeService {
         } else {
             return null;
         }
+    }
+    private List<Recipe> findRecipeContainingName(List<Recipe> recipes,String keyword) {
+        List<Recipe> recipeList = new ArrayList<>();
+        for (Recipe recipe : recipes) {
+            if(recipe.getMember().getName().contains(keyword))
+            {
+                recipeList.add(recipe);
+            }
+        }
+        return recipeList;
     }
 }
