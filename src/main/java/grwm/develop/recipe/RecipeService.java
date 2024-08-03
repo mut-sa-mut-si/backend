@@ -88,6 +88,12 @@ public class RecipeService {
         scrapRepository.save(scrap);
     }
 
+    @Transactional
+    public void deleteScrap(Member member, Long id) {
+        Optional<Scrap> scrap = scrapRepository.findByMemberIdAndRecipeId(member.getId(), id);
+        scrap.ifPresent(scrapRepository::delete);
+    }
+
     private Recipe buildRecipe(Member member, WriteRecipeRequest request) {
         return Recipe.builder().category(getCategory(request.category())).title(request.title())
                 .content(request.content()).isPublic(request.isPublic()).member(member).build();
