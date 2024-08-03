@@ -199,7 +199,7 @@ public class MainPageService {
             }
             memberList.add(new Pair<>(averageRatingOfReview(reviews), member));
         }
-        Collections.sort(memberList, Comparator.comparing(Pair::getKey));
+        memberList.sort((pair1, pair2) -> Float.compare(pair2.getKey(), pair1.getKey()));
         return memberList.stream().map(Pair::getValue).collect(Collectors.toList());
     }
 
