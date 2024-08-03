@@ -265,7 +265,7 @@ public class RecipeService {
         for (RecipeListResponse.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
             Member writer = memberRepository.findById(findRecipe.getMember().getId())
                     .orElseThrow(EntityNotFoundException::new);
-            if (findRecipe.isPublic() && isSubscribe(member, writer)) {
+            if (!findRecipe.isPublic() && isSubscribe(member, writer)) {
                 findRecipe.setPublic(true);
             }
         }
