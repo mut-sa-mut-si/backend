@@ -73,17 +73,17 @@ public class PayService {
         );
     }
 
-    public void afterPay(String pgToken, Long memberId, Long subscribeId) {
+    public void afterPay(String pgToken) {
         PayApproveRequest payApproveRequest = getApproveRequest(pgToken);
         String secretKey = "SECRET_KEY DEVE8ED784F13A714C623A9D1C3DC2541EB1C784";
         payClient.afterPay(secretKey, payApproveRequest);
-        createSubscribe(memberId, subscribeId);
+        createSubscribe();
     }
 
-    private void createSubscribe(Long memberId, Long subscribeId) {
-        Member member = memberRepository.findById(subscribeId)
+    private void createSubscribe() {
+        Member member = memberRepository.findById(memberInfo.getSubscribeId())
                 .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
-        SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(memberId);
+        SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(memberInfo.getMemberId());
         Subscribe subscribe = Subscribe.builder()
                 .member(member)
                 .subscribeItem(subscribeItem)

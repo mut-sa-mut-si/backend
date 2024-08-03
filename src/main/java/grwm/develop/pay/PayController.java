@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class PayController {
 
     private final PayService payService;
-    private MemberInfo memberInfo;
 
     @GetMapping
     public String beforePay(@RequestBody PayInfoRequest request,
@@ -29,7 +28,7 @@ public class PayController {
     @ResponseBody
     @GetMapping("/redirect")
     public ResponseEntity<String> afterPay(@RequestParam("pg_token") String pgToken) {
-        payService.afterPay(pgToken, memberInfo.getMemberId(), memberInfo.getSubscribeId());
+        payService.afterPay(pgToken);
         return ResponseEntity.ok().body("success");
     }
 }
