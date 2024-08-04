@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,13 +82,13 @@ public class MyPageService {
         for (Recipe recipe : recipes) {
             if (isSubscribed) {
                 FindMyPageResponse.RecipeDTO recipeDTO = new FindMyPageResponse.RecipeDTO(recipe.getId(),
-                        imageRepository.findByRecipeId(recipe.getId()).getUrl(),
+                        imageExist(imageRepository.findAllByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList()),
                         true);
                 recipeDTOList.add(recipeDTO);
             }
             else {
                 FindMyPageResponse.RecipeDTO recipeDTO = new FindMyPageResponse.RecipeDTO(recipe.getId(),
-                        imageRepository.findByRecipeId(recipe.getId()).getUrl(),
+                        imageExist(imageRepository.findAllByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList()),
                         recipe.isPublic());
                 recipeDTOList.add(recipeDTO);
             }
