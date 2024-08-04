@@ -47,7 +47,15 @@ public class QuestionController {
         return ResponseEntity.ok().body("ok");
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/authentication")
+    public ResponseEntity<QuestionDetailResponse> clickQuestionLoggedIn(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable(name = "id") Long id) {
+        QuestionDetailResponse response = questionService.readQuestionLoggedIn(userDetails.member(), id);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/{id}/unauthentication")
     public ResponseEntity<QuestionDetailResponse> clickQuestion(@PathVariable(name = "id") Long id) {
         QuestionDetailResponse response = questionService.readQuestion(id);
         return ResponseEntity.ok().body(response);
