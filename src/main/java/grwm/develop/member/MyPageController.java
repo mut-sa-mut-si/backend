@@ -46,4 +46,10 @@ public class MyPageController {
         RecipeListResponse response = myPageService.myScrapList(userDetails.member());
         return ResponseEntity.ok().body(response);
     }
+
+    @GetMapping("/{id}/click-subscribe")
+    public ResponseEntity<SubscribeResponse> clickSubscribe(@PathVariable Long id) {
+        SubscribeResponse response = myPageService.clickSubscribe(id);
+        return ResponseEntity.ok().body(response);
+    }
 }
