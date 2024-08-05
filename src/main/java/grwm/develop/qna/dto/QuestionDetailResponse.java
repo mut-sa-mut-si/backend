@@ -3,6 +3,7 @@ package grwm.develop.qna.dto;
 import java.util.List;
 
 public record QuestionDetailResponse(
+        boolean isWritten,
         QuestionDetail question,
         List<AnswerDetail> answers) {
 

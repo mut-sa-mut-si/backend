@@ -116,7 +116,7 @@ public class QuestionService {
         return Category.NUTRIENTS;
     }
 
-    public QuestionDetailResponse readQuestion(Long questionId) {
+    public QuestionDetailResponse readQuestionLoggedIn(Member member, Long questionId) {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
 
@@ -125,7 +125,31 @@ public class QuestionService {
 
         QuestionDetail questionDetail = getQuestionDetail(question);
 
-        return new QuestionDetailResponse(questionDetail, answerDetails);
+        boolean isWritten = false;
+        for (Answer answer : answers) {
+            if (answer.getMember().getId().equals(member.getId())) {
+                isWritten = true;
+                break;
+            } else if (question.getMember().getId().equals(member.getId())) {
+                isWritten = true;
+                break;
+            }
+        }
+
+        return new QuestionDetailResponse(isWritten, questionDetail, answerDetails);
+    }
+
+    public QuestionDetailResponse readQuestion(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new IllegalArgumentException("질문을 찾을 수 없습니다."));
+
+        boolean isWritten = false;
+        List<Answer> answers = answerRepository.findAllByQuestion(question);
+        List<AnswerDetail> answerDetails = getAnswerDetails(answers);
+
+        QuestionDetail questionDetail = getQuestionDetail(question);
+
+        return new QuestionDetailResponse(isWritten, questionDetail, answerDetails);
     }
 
     private QuestionDetail getQuestionDetail(Question question) {
