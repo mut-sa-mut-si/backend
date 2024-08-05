@@ -309,7 +309,7 @@ public class RecipeService {
         for (RecipeListResponse.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
             Member writer = memberRepository.findById(findRecipe.getMember().getId())
                     .orElseThrow(EntityNotFoundException::new);
-            if (!findRecipe.isPublic() && (isSubscribe(member, writer) || isBuyRecipe(findRecipe.getId(), member))) {
+            if (!findRecipe.isPublic() && (isSubscribe(member, writer) || isBuyRecipe(findRecipe.getId(), member)||isMyRecipe(findRecipe.getId(), member.getId()))) {
                 findRecipe.setPublic(true);
             }
         }
@@ -375,6 +375,12 @@ public class RecipeService {
         {
             return false;
         }
-
+    }
+    private boolean isMyRecipe(Long recipeId, Long memberId){
+        if(recipeId.equals(memberId))
+        {
+            return true;
+        }
+        return false;
     }
 }
