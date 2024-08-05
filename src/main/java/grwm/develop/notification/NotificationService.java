@@ -20,4 +20,14 @@ public class NotificationService {
         List<AnswerNotification> answerNotifications = answerNotificationRepository.findAllByMemberId(member.getId());
         return FindAllNotificationsResponse.from(recipeNotifications, answerNotifications);
     }
+
+    @Transactional
+    public void readNotifications(Long id, String type) {
+        if (type.equals("RECIPE") || type.equals("REVIEW")) {
+            recipeNotificationRepository.deleteById(id);
+        }
+        if (type.equals("ANSWER")) {
+            answerNotificationRepository.deleteById(id);
+        }
+    }
 }
