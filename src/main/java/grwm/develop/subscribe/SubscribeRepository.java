@@ -7,7 +7,9 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
 
     List<Subscribe> findAllByMemberId(Long memberId);
 
-    Subscribe findBySubscribeItemId(Long subscribeItemId);
+    List<Subscribe> findBySubscribeItemId(Long subscribeItemId);
+
+    Subscribe findBySubscribeItemIdAndMemberId(Long subscribeItem, Long memberId);
 
     boolean existsBySubscribeItemIdAndMemberId(Long subscribeItemId, Long memberId);
 }
