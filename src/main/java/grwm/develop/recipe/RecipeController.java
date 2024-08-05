@@ -6,8 +6,11 @@ import grwm.develop.recipe.dto.ReadRecipeResponse;
 import grwm.develop.recipe.dto.RecipeListResponse;
 import grwm.develop.recipe.dto.WriteRecipeRequest;
 import grwm.develop.recipe.dto.WriteReviewRequest;
+
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -105,4 +108,10 @@ public class RecipeController {
         return ResponseEntity.ok().body("ok");
     }
 
+    @PostMapping("/{id}/read-private")
+    public ResponseEntity<ReadRecipeResponse> singlePay(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                        @PathVariable("id") Long id) {
+        ReadRecipeResponse response = recipeService.buyRecipe(userDetails.member(), id);
+        return ResponseEntity.ok().body(response);
+    }
 }

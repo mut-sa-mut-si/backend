@@ -22,11 +22,9 @@ import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
 import grwm.develop.recipe.scrap.Scrap;
 import grwm.develop.recipe.scrap.ScrapRepository;
-import grwm.develop.subscribe.Subscribe;
-import grwm.develop.subscribe.SubscribeItem;
-import grwm.develop.subscribe.SubscribeItemRepository;
-import grwm.develop.subscribe.SubscribeRepository;
+import grwm.develop.subscribe.*;
 import jakarta.persistence.EntityNotFoundException;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +36,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,6 +51,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class RecipeService {
 
     private static final String IMAGE_SAVE_PATH_PREFIX = "images/";
+    private static final int RECIPE_PRICE = 120;
+
     private final MemberService memberService;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -66,6 +67,7 @@ public class RecipeService {
     private final SubscribeRepository subscribeRepository;
     private final SubscribeItemRepository subscribeItemRepository;
     private final ScrapRepository scrapRepository;
+    private final BuyRecipeRepository buyRecipeRepository;
     private final RecipeNotificationRepository recipeNotificationRepository;
 
     @Transactional
@@ -124,6 +126,17 @@ public class RecipeService {
     public void deleteScrap(Member member, Long id) {
         Optional<Scrap> scrap = scrapRepository.findByMemberIdAndRecipeId(member.getId(), id);
         scrap.ifPresent(scrapRepository::delete);
+    }
+
+    public ReadRecipeResponse buyRecipe(Member member, Long id) {
+        Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        buyRecipeRepository.save(buildbuyrecipe(member, recipe));
+        member.setPoint(member.getPoint() - RECIPE_PRICE);
+        return findRecipe(id, member);
+    }
+
+    private buyRecipe buildbuyrecipe(Member member, Recipe recipe) {
+        return buyRecipe.builder().member(member).recipe(recipe).build();
     }
 
     private Recipe buildRecipe(Member member, WriteRecipeRequest request) {
@@ -245,7 +258,7 @@ public class RecipeService {
         if (member == null) {
             return recipeListResponse;
         } else {
-            return isSubscribeList(recipeListResponse, member);
+            return isPublicList(recipeListResponse, member);
         }
     }
 
@@ -255,7 +268,7 @@ public class RecipeService {
         if (member == null) {
             return recipeListResponse;
         } else {
-            return isSubscribeList(recipeListResponse, member);
+            return isPublicList(recipeListResponse, member);
         }
     }
 
@@ -276,12 +289,12 @@ public class RecipeService {
         if (member == null) {
             return searchRecipe;
         } else {
-            return isSubscribeList(searchRecipe, member);
+            return isPublicList(searchRecipe, member);
         }
 
     }
 
-    boolean isSubscribe(Member member, Member writer) {
+    private boolean isSubscribe(Member member, Member writer) {
         SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(writer.getId());
         List<Subscribe> subscribes = subscribeRepository.findAllByMemberId(member.getId());
         for (Subscribe subscribe : subscribes) {
@@ -292,16 +305,21 @@ public class RecipeService {
         return false;
     }
 
-    private RecipeListResponse isSubscribeList(RecipeListResponse recipeListResponse, Member member) {
+    private RecipeListResponse isPublicList(RecipeListResponse recipeListResponse, Member member) {
         for (RecipeListResponse.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
             Member writer = memberRepository.findById(findRecipe.getMember().getId())
                     .orElseThrow(EntityNotFoundException::new);
-            if (!findRecipe.isPublic() && isSubscribe(member, writer)) {
+            if (!findRecipe.isPublic() && (isSubscribe(member, writer) || isBuyRecipe(findRecipe.getId(), member))) {
                 findRecipe.setPublic(true);
             }
         }
         return recipeListResponse;
     }
+
+    private boolean isBuyRecipe(Long recipeId, Member member) {
+        return buyRecipeRepository.existsByMemberIdAndRecipeId(member.getId(), recipeId);
+    }
+
 
     public List<Recipe> integrateRecipe(List<Recipe> recipesContent, List<Recipe> recipesHashtag,
                                         List<Recipe> recipesTitle,

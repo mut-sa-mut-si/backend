@@ -11,14 +11,17 @@ import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
 import grwm.develop.recipe.scrap.Scrap;
 import grwm.develop.recipe.scrap.ScrapRepository;
+import grwm.develop.subscribe.BuyRecipeRepository;
 import grwm.develop.subscribe.SubscribeItem;
 import grwm.develop.subscribe.SubscribeItemRepository;
 import grwm.develop.subscribe.SubscribeRepository;
 import jakarta.persistence.EntityNotFoundException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +38,7 @@ public class MyPageService {
     private final ImageRepository imageRepository;
     private final SubscribeRepository subscribeRepository;
     private final SubscribeItemRepository subscribeItemRepository;
+    private final BuyRecipeRepository buyRecipeRepository;
 
     public FindMyPageResponse findMyPage(Long id, Member member) {
         Member findMember = memberRepository.findById(id)
@@ -48,7 +52,8 @@ public class MyPageService {
             SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(id);
             boolean isSubscribed = subscribeRepository.existsBySubscribeItemIdAndMemberId(subscribeItem.getId(),
                     member.getId());
-            List<FindMyPageResponse.RecipeDTO> recipeDTOS = buildRecipeDTOList(recipeRepository.findAllByMemberId(id), isSubscribed);
+
+            List<FindMyPageResponse.RecipeDTO> recipeDTOS = buildRecipeDTOList(recipeRepository.findAllByMemberId(id), member, isSubscribed);
 
             return FindMyPageResponse.of(false, isSubscribed, recipes.size(), averageRating(reviews), findMember, recipeDTOS);
         } else {
@@ -74,7 +79,7 @@ public class MyPageService {
         return recipeListResponse;
     }
 
-    private List<FindMyPageResponse.RecipeDTO> buildRecipeDTOList(List<Recipe> recipes, boolean isSubscribed) {
+    private List<FindMyPageResponse.RecipeDTO> buildRecipeDTOList(List<Recipe> recipes, Member member, boolean isSubscribed) {
         List<FindMyPageResponse.RecipeDTO> recipeDTOList = new ArrayList<>();
         for (Recipe recipe : recipes) {
             if (isSubscribed) {
@@ -82,18 +87,20 @@ public class MyPageService {
                         imageExist(imageRepository.findAllByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList()),
                         true);
                 recipeDTOList.add(recipeDTO);
-            }
-            else {
+            } else {
+                boolean recipePublic = recipe.isPublic();
+                if (!recipe.isPublic()) {
+                    recipePublic = isBuyRecipe(recipe.getId(), member);
+                }
                 FindMyPageResponse.RecipeDTO recipeDTO = new FindMyPageResponse.RecipeDTO(recipe.getId(),
                         imageExist(imageRepository.findAllByRecipeId(recipe.getId()).stream().map(Image::getUrl).toList()),
-                        recipe.isPublic());
+                        recipePublic);
                 recipeDTOList.add(recipeDTO);
             }
 
-            }
-        return recipeDTOList;
         }
-
+        return recipeDTOList;
+    }
 
 
     public RecipeListResponse myRecipeList(Member member) {
@@ -131,6 +138,9 @@ public class MyPageService {
             return null;
         }
     }
+
+    private boolean isBuyRecipe(Long recipeId, Member member) {
+        return buyRecipeRepository.existsByMemberIdAndRecipeId(member.getId(), recipeId);
 
     public SubscribeResponse clickSubscribe(Long id) {
         Member member = memberRepository.findById(id)
