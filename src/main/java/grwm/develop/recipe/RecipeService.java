@@ -364,11 +364,11 @@ public class RecipeService {
     }
     private boolean isWriting(Member member, Recipe recipe)
     {
-        if(reviewRepository.existsByRecipeIdAndMemberId(member.getId(), recipe.getId())) 
+        if(reviewRepository.existsByRecipeIdAndMemberId(member.getId(), recipe.getId()))
         {
             return true;
         }
-        else if(recipe.getMember().equals(member))
+        else if(recipe.getMember().getId().equals(member.getId()))
         {
             return true;
         }else
