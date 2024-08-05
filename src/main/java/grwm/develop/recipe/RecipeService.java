@@ -128,6 +128,7 @@ public class RecipeService {
         scrap.ifPresent(scrapRepository::delete);
     }
 
+    @Transactional
     public ReadRecipeResponse buyRecipe(Member member, Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         buyRecipeRepository.save(buildbuyrecipe(member, recipe));
