@@ -25,11 +25,17 @@ public class MyPageController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<FindMyPageResponse> myPage(@PathVariable(name = "id") Long id,
+    @GetMapping("/{id}/authentication")
+    public ResponseEntity<FindMyPageResponse> myPagelogin(@PathVariable(name = "id") Long id,
                                                      @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         FindMyPageResponse response = myPageService.findMyPage(id, userDetails.member());
+        return ResponseEntity.ok().body(response);
+    }
+    @GetMapping("/{id}/unauthentication")
+    public ResponseEntity<FindMyPageResponse> myPage(@PathVariable(name = "id") Long id)
+    {
+        FindMyPageResponse response = myPageService.findMyPage(id, null);
         return ResponseEntity.ok().body(response);
     }
 

@@ -46,7 +46,7 @@ public class MyPageService {
         for (Recipe recipe : recipes) {
             reviews.addAll(reviewRepository.findAllByRecipeId(recipe.getId()));
         }
-        if (!findMember.getId().equals(member.getId())) {
+        if (!findMember.getId().equals(member.getId())||member == null) {
             SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(id);
             boolean isSubscribed = subscribeRepository.existsBySubscribeItemIdAndMemberId(subscribeItem.getId(),
                     member.getId());
