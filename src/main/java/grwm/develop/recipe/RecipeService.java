@@ -5,6 +5,10 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import grwm.develop.Category;
 import grwm.develop.member.Member;
 import grwm.develop.member.MemberRepository;
+import grwm.develop.member.MemberService;
+import grwm.develop.notification.RecipeNotification;
+import grwm.develop.notification.RecipeNotificationRepository;
+import grwm.develop.notification.Type;
 import grwm.develop.recipe.dto.ReadLockRecipeResponse;
 import grwm.develop.recipe.dto.ReadRecipeResponse;
 import grwm.develop.recipe.dto.RecipeListResponse;
@@ -48,6 +52,9 @@ public class RecipeService {
 
     private static final String IMAGE_SAVE_PATH_PREFIX = "images/";
     private static final int RECIPE_PRICE = 120;
+
+    private final MemberService memberService;
+
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
@@ -61,6 +68,7 @@ public class RecipeService {
     private final SubscribeItemRepository subscribeItemRepository;
     private final ScrapRepository scrapRepository;
     private final BuyRecipeRepository buyRecipeRepository;
+    private final RecipeNotificationRepository recipeNotificationRepository;
 
     @Transactional
     public void writeRecipe(Member member, WriteRecipeRequest request, List<MultipartFile> images) {
@@ -72,6 +80,18 @@ public class RecipeService {
 
         List<Image> uploadedImages = getUploadedImages(images, recipe);
         imageRepository.saveAll(uploadedImages);
+
+        SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(member.getId());
+        List<Subscribe> subscribes = subscribeRepository.findBySubscribeItemId(subscribeItem.getId());
+        subscribes.forEach(subscribe -> recipeNotificationRepository.save(buildRecipeNotification(subscribe)));
+    }
+
+    private RecipeNotification buildRecipeNotification(Subscribe subscribe) {
+        Member subscribeMember = subscribe.getMember();
+        return RecipeNotification.builder()
+                .member(subscribeMember)
+                .type(Type.RECIPE)
+                .build();
     }
 
     @Transactional
@@ -79,6 +99,18 @@ public class RecipeService {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         Review review = buildReview(member, writeReviewRequest, recipe);
         reviewRepository.save(review);
+
+        RecipeNotification recipeNotification = buildReviewNotification(recipe);
+        log.info("recipeNotification={}", recipeNotification);
+        recipeNotificationRepository.save(recipeNotification);
+    }
+
+    private RecipeNotification buildReviewNotification(Recipe recipe) {
+        return RecipeNotification.builder()
+                .member(recipe.getMember())
+                .recipe(recipe)
+                .type(Type.REVIEW)
+                .build();
     }
 
     @Transactional
