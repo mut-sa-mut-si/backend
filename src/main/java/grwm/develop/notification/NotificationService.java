@@ -23,10 +23,10 @@ public class NotificationService {
 
     @Transactional
     public void readNotifications(Long id, String type) {
-        if (type.equals("RECIPE") || type.equals("REVIEW")) {
+        if (type.equals("recipe") || type.equals("review")) {
             recipeNotificationRepository.deleteById(id);
         }
-        if (type.equals("ANSWER")) {
+        if (type.equals("answer")) {
             answerNotificationRepository.deleteById(id);
         }
     }
