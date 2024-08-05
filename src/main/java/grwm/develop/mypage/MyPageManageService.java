@@ -27,10 +27,8 @@ public class MyPageManageService {
     @Transactional
     public void deleteSubscribe(Long subscribeId, Member member) {
         SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(subscribeId);
-        Subscribe subscribe = subscribeRepository.findBySubscribeItemId(subscribeItem.getId());
-        if (!member.getId().equals(subscribe.getMember().getId())) {
-            throw new IllegalArgumentException("Not matches member");
-        }
+        Subscribe subscribe = subscribeRepository.findBySubscribeItemIdAndMemberId(subscribeItem.getId(),
+                member.getId());
         subscribeRepository.delete(subscribe);
     }
 }
