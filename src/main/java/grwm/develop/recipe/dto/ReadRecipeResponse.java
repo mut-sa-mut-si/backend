@@ -5,11 +5,13 @@ import grwm.develop.recipe.Recipe;
 import grwm.develop.recipe.hashtag.Hashtag;
 import grwm.develop.recipe.image.Image;
 import grwm.develop.recipe.review.Review;
+
 import java.util.List;
 
 public record ReadRecipeResponse(Long id, String title, String content, int recipeCount, int reviewCount,
                                  float ratingAverage,
                                  boolean isClickedScrap,
+                                 boolean isWritten,
                                  FindMember member,
                                  List<FindImage> images,
                                  List<FindHashtag> hashtags,
@@ -18,6 +20,7 @@ public record ReadRecipeResponse(Long id, String title, String content, int reci
     public static ReadRecipeResponse of(Long id, String title, String content, int recipeCount, int reviewCount,
                                         float ratingAverage,
                                         boolean isClickedScrap,
+                                        boolean isWritten,
                                         Member member,
                                         List<Image> images,
                                         List<Hashtag> hashtags,
@@ -28,6 +31,7 @@ public record ReadRecipeResponse(Long id, String title, String content, int reci
                 reviewCount,
                 ratingAverage,
                 isClickedScrap,
+                isWritten,
                 new FindMember(member.getId(), member.getName()),
                 images.stream().map(image ->
                         new FindImage(

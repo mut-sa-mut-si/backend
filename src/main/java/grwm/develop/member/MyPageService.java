@@ -151,5 +151,6 @@ public class MyPageService {
         String memberName = member.getName();
         return new SubscribeResponse(memberName);
     }
+
 }
 
