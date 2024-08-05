@@ -141,6 +141,7 @@ public class MyPageService {
 
     private boolean isBuyRecipe(Long recipeId, Member member) {
         return buyRecipeRepository.existsByMemberIdAndRecipeId(member.getId(), recipeId);
+    }
 
     public SubscribeResponse clickSubscribe(Long id) {
         Member member = memberRepository.findById(id)
@@ -148,5 +149,6 @@ public class MyPageService {
         String memberName = member.getName();
         return new SubscribeResponse(memberName);
     }
+
 }
 

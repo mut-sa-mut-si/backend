@@ -237,11 +237,11 @@ public class RecipeService {
         float ratingAverage = averageRating(reviews);
         if (member == null) {
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, false, writer, images, hashtags, reviews, recipe);
+                    reviewCount, ratingAverage, false,true, writer, images, hashtags, reviews, recipe);
         } else {
             boolean isClickedScrap = scrapRepository.existsByMemberIdAndRecipeId(member.getId(), recipe.getId());
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, isClickedScrap, writer, images, hashtags, reviews, recipe);
+                    reviewCount, ratingAverage, isClickedScrap,isWriting(member,recipe), writer, images, hashtags, reviews, recipe);
         }
 
     }
@@ -361,5 +361,20 @@ public class RecipeService {
             }
         }
         return recipeList;
+    }
+    private boolean isWriting(Member member, Recipe recipe)
+    {
+        if(reviewRepository.existsByRecipeIdAndMemberId(member.getId(), recipe.getId())) 
+        {
+            return true;
+        }
+        else if(recipe.getMember().equals(member))
+        {
+            return true;
+        }else
+        {
+            return false;
+        }
+
     }
 }
