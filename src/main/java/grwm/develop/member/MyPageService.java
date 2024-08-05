@@ -11,10 +11,7 @@ import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
 import grwm.develop.recipe.scrap.Scrap;
 import grwm.develop.recipe.scrap.ScrapRepository;
-import grwm.develop.subscribe.BuyRecipeRepository;
-import grwm.develop.subscribe.SubscribeItem;
-import grwm.develop.subscribe.SubscribeItemRepository;
-import grwm.develop.subscribe.SubscribeRepository;
+import grwm.develop.subscribe.*;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -103,6 +100,9 @@ public class MyPageService {
         }
         return recipeDTOList;
     }
+    private Subscribe buildSubscribe(SubscribeItem subscribeItem, Member member ) {
+        return Subscribe.builder().subscribeItem(subscribeItem).member(member).build();
+    }
 
 
     public RecipeListResponse myRecipeList(Member member) {
@@ -150,6 +150,12 @@ public class MyPageService {
                 .orElseThrow(() -> new IllegalArgumentException("멤버를 찾을 수 없습니다."));
         String memberName = member.getName();
         return new SubscribeResponse(memberName);
+    }
+    public void subscribeMember(Long targetId, Member member)
+    {
+        SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(targetId);
+        Subscribe subscribe = buildSubscribe(subscribeItem, member);
+        subscribeRepository.save(subscribe);
     }
 
 }

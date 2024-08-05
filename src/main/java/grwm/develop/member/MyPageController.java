@@ -3,14 +3,12 @@ package grwm.develop.member;
 import grwm.develop.auth.security.UserDetailsImpl;
 import grwm.develop.mypage.dto.FindMyPageMineResponse;
 import grwm.develop.mypage.dto.FindMyPageResponse;
+import grwm.develop.pay.dto.PaymentRequest;
 import grwm.develop.recipe.dto.RecipeListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -57,5 +55,11 @@ public class MyPageController {
     public ResponseEntity<SubscribeResponse> clickSubscribe(@PathVariable Long id) {
         SubscribeResponse response = myPageService.clickSubscribe(id);
         return ResponseEntity.ok().body(response);
+    }
+    @PostMapping("/{id}/payment")
+    public ResponseEntity<String> subscribePayment(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                   @PathVariable Long id) {
+        myPageService.subscribeMember(id, userDetails.member());
+        return ResponseEntity.ok().body("ok");
     }
 }
