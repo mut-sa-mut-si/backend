@@ -104,14 +104,14 @@ public class RecipeService {
         Review review = buildReview(member, writeReviewRequest, recipe);
         reviewRepository.save(review);
 
-        RecipeNotification recipeNotification = buildReviewNotification(recipe);
+        RecipeNotification recipeNotification = buildReviewNotification(recipe, member);
         log.info("recipeNotification={}", recipeNotification);
         recipeNotificationRepository.save(recipeNotification);
     }
 
-    private RecipeNotification buildReviewNotification(Recipe recipe) {
+    private RecipeNotification buildReviewNotification(Recipe recipe, Member member) {
         return RecipeNotification.builder()
-                .member(recipe.getMember())
+                .member(member)
                 .recipe(recipe)
                 .type(Type.REVIEW)
                 .build();
