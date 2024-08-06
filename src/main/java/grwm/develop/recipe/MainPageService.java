@@ -145,17 +145,20 @@ public class MainPageService {
     private List<Recipe> findRecommendRecipes(Member member) {
         List<Recipe> recipes = new ArrayList<>();
         if (member == null) {//만약에 로그인을 안했던 유저라면 랜덤으로 6개 반환하기
-            return findRandomValueList(recipeRepository.findAll(), RECOMMEND_RECIPECOUNT);
+            return findRandomValueList(recipeRepository.findAll().stream().
+                    filter(recipe -> recipe.isPublic() == true).
+                    collect(Collectors.toList())
+                    , RECOMMEND_RECIPECOUNT);
         }
         Map<Category, List<Onboard>> memberOnboard = classifyOnboard(member);
         for (Category category : memberOnboard.keySet()) {
-            List<Recipe> recipeList = recipeRepository.findAllByCategory(category);
+            List<Recipe> recipeList = recipeRepository.findAllByCategory(category).stream().filter(recipe -> recipe.isPublic() == true).collect(Collectors.toList());
             List<Onboard> onboards = memberOnboard.get(category);
             recipes.addAll(bestRecipe(recipeList, onboards, RECOMMEND_RECIPECOUNT / memberOnboard.size()));
         }
         if((recipes.size() < RECOMMEND_RECIPECOUNT) && (recipeRepository.findAll().size() >= RECOMMEND_RECIPECOUNT)) {
             //추천게시물의 수가 6개보다 작고 들어있는 레시피의 총 수가 6개 이상일때 실행한다.
-           for(Recipe recipe : recipeRepository.findAll()) {
+           for(Recipe recipe : recipeRepository.findAll().stream().filter(recipe -> recipe.isPublic()==true).collect(Collectors.toList())) {
                if(!recipes.contains(recipe))
                {
                    recipes.add(recipe);
