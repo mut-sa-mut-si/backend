@@ -54,7 +54,9 @@ public class MyPageService {
             return FindMyPageResponse.of(false, isSubscribed, recipes.size(), averageRating(reviews), findMember,
                     recipeDTOS);
         } else {
-            return FindMyPageResponse.of(true, false, recipes.size(), averageRating(reviews), member, null);
+            List<FindMyPageResponse.RecipeDTO> recipeDTOS = buildRecipeDTOList(recipeRepository.findAllByMemberId(id),
+                    member, true);
+            return FindMyPageResponse.of(true, false, recipes.size(), averageRating(reviews), member, recipeDTOS);
         }
     }
 
