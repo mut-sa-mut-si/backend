@@ -11,7 +11,11 @@ import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
 import grwm.develop.recipe.scrap.Scrap;
 import grwm.develop.recipe.scrap.ScrapRepository;
-import grwm.develop.subscribe.*;
+import grwm.develop.subscribe.BuyRecipeRepository;
+import grwm.develop.subscribe.Subscribe;
+import grwm.develop.subscribe.SubscribeItem;
+import grwm.develop.subscribe.SubscribeItemRepository;
+import grwm.develop.subscribe.SubscribeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -43,7 +47,7 @@ public class MyPageService {
         for (Recipe recipe : recipes) {
             reviews.addAll(reviewRepository.findAllByRecipeId(recipe.getId()));
         }
-        if (!findMember.getId().equals(member.getId())||member == null) {
+        if (!findMember.getId().equals(member.getId()) || member == null) {
             SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(id);
             boolean isSubscribed = subscribeRepository.existsBySubscribeItemIdAndMemberId(subscribeItem.getId(),
                     member.getId());
@@ -100,8 +104,12 @@ public class MyPageService {
         }
         return recipeDTOList;
     }
-    private Subscribe buildSubscribe(SubscribeItem subscribeItem, Member member ) {
-        return Subscribe.builder().subscribeItem(subscribeItem).member(member).build();
+
+    private Subscribe buildSubscribe(SubscribeItem subscribeItem, Member member) {
+        return Subscribe.builder()
+                .subscribeItem(subscribeItem)
+                .member(member)
+                .build();
     }
 
 
@@ -151,12 +159,12 @@ public class MyPageService {
         String memberName = member.getName();
         return new SubscribeResponse(memberName);
     }
-    public void subscribeMember(Long targetId, Member member)
-    {
+
+    @Transactional
+    public void subscribeMember(Long targetId, Member member) {
         SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(targetId);
         Subscribe subscribe = buildSubscribe(subscribeItem, member);
         subscribeRepository.save(subscribe);
     }
-
 }
 

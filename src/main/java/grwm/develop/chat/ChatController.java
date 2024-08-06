@@ -4,6 +4,7 @@ import grwm.develop.auth.security.UserDetailsImpl;
 import grwm.develop.chat.dto.FindAllChatRoomsResponse;
 import grwm.develop.chat.dto.FindChatRoomResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/chats")
@@ -21,10 +23,12 @@ public class ChatController {
     private final ChatService chatService;
 
     @GetMapping
-    public ResponseEntity<FindAllChatRoomsResponse> findAll(@RequestParam(name = "category") String category,
-                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<FindAllChatRoomsResponse> findAll(
+            @RequestParam(name = "category", required = false) String category,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         FindAllChatRoomsResponse response = chatService.findAllChats(category, userDetails.member());
+        log.info("response={}", response);
         return ResponseEntity.ok().body(response);
     }
 
@@ -38,7 +42,7 @@ public class ChatController {
 
     @PostMapping
     public ResponseEntity<String> participate(@RequestParam(name = "memberId") Long memberId,
-                                              @RequestParam(name = "category") String category,
+                                              @RequestParam(name = "category", required = false) String category,
                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         chatService.participateChat(memberId, userDetails.member(), category);

@@ -31,7 +31,9 @@ public class ChatService {
 
     public FindAllChatRoomsResponse findAllChats(String category, Member member) {
         List<Participant> participants = participantRepository.findByMemberId(member.getId());
-        List<Room> rooms = getRooms(category, participants);
+        List<Room> rooms = participants.stream()
+                .map(Participant::getRoom)
+                .toList();
 
         Map<Long, String> messageMap = new HashMap<>();
         Map<Long, Member> memberMap = new HashMap<>();
