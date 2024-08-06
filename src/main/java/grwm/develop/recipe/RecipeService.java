@@ -22,9 +22,13 @@ import grwm.develop.recipe.review.Review;
 import grwm.develop.recipe.review.ReviewRepository;
 import grwm.develop.recipe.scrap.Scrap;
 import grwm.develop.recipe.scrap.ScrapRepository;
-import grwm.develop.subscribe.*;
+import grwm.develop.subscribe.BuyRecipeRepository;
+import grwm.develop.subscribe.Subscribe;
+import grwm.develop.subscribe.SubscribeItem;
+import grwm.develop.subscribe.SubscribeItemRepository;
+import grwm.develop.subscribe.SubscribeRepository;
+import grwm.develop.subscribe.buyRecipe;
 import jakarta.persistence.EntityNotFoundException;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,7 +40,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -83,13 +86,14 @@ public class RecipeService {
 
         SubscribeItem subscribeItem = subscribeItemRepository.findByMemberId(member.getId());
         List<Subscribe> subscribes = subscribeRepository.findBySubscribeItemId(subscribeItem.getId());
-        subscribes.forEach(subscribe -> recipeNotificationRepository.save(buildRecipeNotification(subscribe)));
+        subscribes.forEach(subscribe -> recipeNotificationRepository.save(buildRecipeNotification(subscribe, recipe)));
     }
 
-    private RecipeNotification buildRecipeNotification(Subscribe subscribe) {
+    private RecipeNotification buildRecipeNotification(Subscribe subscribe, Recipe recipe) {
         Member subscribeMember = subscribe.getMember();
         return RecipeNotification.builder()
                 .member(subscribeMember)
+                .recipe(recipe)
                 .type(Type.RECIPE)
                 .build();
     }
@@ -133,6 +137,7 @@ public class RecipeService {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         buyRecipeRepository.save(buildbuyrecipe(member, recipe));
         member.setPoint(member.getPoint() - RECIPE_PRICE);
+        memberRepository.save(member);
         return findRecipe(id, member);
     }
 
@@ -238,11 +243,12 @@ public class RecipeService {
         float ratingAverage = averageRating(reviews);
         if (member == null) {
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, false,true, writer, images, hashtags, reviews, recipe);
+                    reviewCount, ratingAverage, false, true, writer, images, hashtags, reviews, recipe);
         } else {
             boolean isClickedScrap = scrapRepository.existsByMemberIdAndRecipeId(member.getId(), recipe.getId());
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, isClickedScrap,isWriting(member,recipe), writer, images, hashtags, reviews, recipe);
+                    reviewCount, ratingAverage, isClickedScrap, isWriting(member, recipe), writer, images, hashtags,
+                    reviews, recipe);
         }
 
     }
@@ -310,7 +316,8 @@ public class RecipeService {
         for (RecipeListResponse.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
             Member writer = memberRepository.findById(findRecipe.getMember().getId())
                     .orElseThrow(EntityNotFoundException::new);
-            if (!findRecipe.isPublic() && (isSubscribe(member, writer) || isBuyRecipe(findRecipe.getId(), member)||isMyRecipe(findRecipe.getId(), member.getId()))) {
+            if (!findRecipe.isPublic() && (isSubscribe(member, writer) || isBuyRecipe(findRecipe.getId(), member)
+                    || isMyRecipe(findRecipe.getId(), member.getId()))) {
                 findRecipe.setPublic(true);
             }
         }
@@ -363,23 +370,19 @@ public class RecipeService {
         }
         return recipeList;
     }
-    private boolean isWriting(Member member, Recipe recipe)
-    {
-        if(reviewRepository.existsByRecipeIdAndMemberId(member.getId(), recipe.getId()))
-        {
+
+    private boolean isWriting(Member member, Recipe recipe) {
+        if (reviewRepository.existsByRecipeIdAndMemberId(member.getId(), recipe.getId())) {
             return true;
-        }
-        else if(recipe.getMember().getId().equals(member.getId()))
-        {
+        } else if (recipe.getMember().getId().equals(member.getId())) {
             return true;
-        }else
-        {
+        } else {
             return false;
         }
     }
-    private boolean isMyRecipe(Long recipeId, Long memberId){
-        if(recipeId.equals(memberId))
-        {
+
+    private boolean isMyRecipe(Long recipeId, Long memberId) {
+        if (recipeId.equals(memberId)) {
             return true;
         }
         return false;

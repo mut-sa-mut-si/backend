@@ -26,9 +26,8 @@ public class MyPageManageController {
         return ResponseEntity.ok().body(response);
     }
 
-    @DeleteMapping("/{memberId}/subscribes/{subscribeId}")
-    public ResponseEntity<String> cancelSubscribe(@PathVariable(name = "memberId") Long memberId,
-                                                  @PathVariable(name = "subscribeId") Long subscribeId,
+    @DeleteMapping("/subscribes/{subscribeId}")
+    public ResponseEntity<String> cancelSubscribe(@PathVariable(name = "subscribeId") Long subscribeId,
                                                   @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         myPageManageService.deleteSubscribe(subscribeId, userDetails.member());
