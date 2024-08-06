@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,11 +27,17 @@ public class MyPageController {
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<FindMyPageResponse> myPage(@PathVariable(name = "id") Long id,
-                                                     @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @GetMapping("/{id}/authentication")
+    public ResponseEntity<FindMyPageResponse> myPagelogin(@PathVariable(name = "id") Long id,
+                                                          @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         FindMyPageResponse response = myPageService.findMyPage(id, userDetails.member());
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/{id}/unauthentication")
+    public ResponseEntity<FindMyPageResponse> myPage(@PathVariable(name = "id") Long id) {
+        FindMyPageResponse response = myPageService.findMyPage(id, null);
         return ResponseEntity.ok().body(response);
     }
 
@@ -58,5 +65,12 @@ public class MyPageController {
     public ResponseEntity<Boolean> checkOnboard(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         boolean isOnboarded = memberService.checkMemberOnboarding(userDetails.member());
         return ResponseEntity.ok().body(isOnboarded);
+    }
+
+    @PostMapping("/{id}/payment")
+    public ResponseEntity<String> subscribePayment(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                   @PathVariable Long id) {
+        myPageService.subscribeMember(id, userDetails.member());
+        return ResponseEntity.ok().body("ok");
     }
 }
