@@ -128,6 +128,7 @@ public class RecipeService {
         scrap.ifPresent(scrapRepository::delete);
     }
 
+    @Transactional
     public ReadRecipeResponse buyRecipe(Member member, Long id) {
         Recipe recipe = recipeRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         buyRecipeRepository.save(buildbuyrecipe(member, recipe));
@@ -309,7 +310,7 @@ public class RecipeService {
         for (RecipeListResponse.FindRecipe findRecipe : recipeListResponse.getRecipes()) {
             Member writer = memberRepository.findById(findRecipe.getMember().getId())
                     .orElseThrow(EntityNotFoundException::new);
-            if (!findRecipe.isPublic() && (isSubscribe(member, writer) || isBuyRecipe(findRecipe.getId(), member))) {
+            if (!findRecipe.isPublic() && (isSubscribe(member, writer) || isBuyRecipe(findRecipe.getId(), member)||isMyRecipe(findRecipe.getId(), member.getId()))) {
                 findRecipe.setPublic(true);
             }
         }
@@ -375,6 +376,12 @@ public class RecipeService {
         {
             return false;
         }
-
+    }
+    private boolean isMyRecipe(Long recipeId, Long memberId){
+        if(recipeId.equals(memberId))
+        {
+            return true;
+        }
+        return false;
     }
 }
