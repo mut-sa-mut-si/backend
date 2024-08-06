@@ -238,11 +238,11 @@ public class RecipeService {
         float ratingAverage = averageRating(reviews);
         if (member == null) {
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, false,true, writer, images, hashtags, reviews, recipe);
+                    reviewCount, ratingAverage,false ,false,true, writer, images, hashtags, reviews, recipe);
         } else {
             boolean isClickedScrap = scrapRepository.existsByMemberIdAndRecipeId(member.getId(), recipe.getId());
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, isClickedScrap,isWriting(member,recipe), writer, images, hashtags, reviews, recipe);
+                    reviewCount, ratingAverage,isMyRecipe(id, member.getId()), isClickedScrap,isWriting(member,recipe), writer, images, hashtags, reviews, recipe);
         }
 
     }
@@ -378,7 +378,8 @@ public class RecipeService {
         }
     }
     private boolean isMyRecipe(Long recipeId, Long memberId){
-        if(recipeId.equals(memberId))
+        Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(EntityNotFoundException::new);
+        if(recipe.getMember().getId().equals(memberId))
         {
             return true;
         }
