@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MyPageController {
 
     private final MyPageService myPageService;
+    private final MemberService memberService;
 
     @GetMapping
     public ResponseEntity<FindMyPageMineResponse> myPageMine(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -51,5 +52,11 @@ public class MyPageController {
     public ResponseEntity<SubscribeResponse> clickSubscribe(@PathVariable Long id) {
         SubscribeResponse response = myPageService.clickSubscribe(id);
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/check-onboard")
+    public ResponseEntity<Boolean> checkOnboard(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        boolean isOnboarded = memberService.checkMemberOnboarding(userDetails.member());
+        return ResponseEntity.ok().body(isOnboarded);
     }
 }

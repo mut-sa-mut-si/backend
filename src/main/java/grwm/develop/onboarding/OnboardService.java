@@ -2,19 +2,23 @@ package grwm.develop.onboarding;
 
 import grwm.develop.Category;
 import grwm.develop.member.Member;
+import grwm.develop.member.MemberRepository;
 import grwm.develop.onboarding.dto.LandingMemberResponse;
 import grwm.develop.onboarding.dto.OnboardRequest;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OnboardService {
 
     private final OnboardRepository onboardRepository;
+    private final MemberRepository memberRepository;
 
     public LandingMemberResponse landing(Member member) {
         return LandingMemberResponse.from(member);
@@ -27,6 +31,9 @@ public class OnboardService {
         addHealthOnboard(request, member, onboards);
         addNutrientsOnboard(request, member, onboards);
         onboardRepository.saveAll(onboards);
+        member.setOnboarded(true);
+        memberRepository.save(member);
+        log.info("onboard={}", member.isOnboarded());
     }
 
     private void addSkinOnboard(OnboardRequest request, Member member, List<Onboard> onboards) {

@@ -30,7 +30,7 @@ public class AnswerService {
         Answer answer = buildAnswer(member, request, question);
         answerRepository.save(answer);
 
-        AnswerNotification answerNotification = buildAnswerNotification(question);
+        AnswerNotification answerNotification = buildAnswerNotification(question, member);
         answerNotificationRepository.save(answerNotification);
     }
 
@@ -42,9 +42,9 @@ public class AnswerService {
                 .build();
     }
 
-    private AnswerNotification buildAnswerNotification(Question question) {
+    private AnswerNotification buildAnswerNotification(Question question, Member member) {
         return AnswerNotification.builder()
-                .member(question.getMember())
+                .member(member)
                 .question(question)
                 .type(Type.ANSWER)
                 .build();

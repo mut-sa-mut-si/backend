@@ -26,4 +26,7 @@ public class Member extends BaseEntity {
 
     private int point;
 
+    @Setter
+    @Column(columnDefinition = "boolean default false")
+    private boolean isOnboarded;
 }
