@@ -10,6 +10,7 @@ import java.util.List;
 
 public record ReadRecipeResponse(Long id, String title, String content, int recipeCount, int reviewCount,
                                  float ratingAverage,
+                                 boolean isMe,
                                  boolean isClickedScrap,
                                  boolean isWritten,
                                  FindMember member,
@@ -19,6 +20,7 @@ public record ReadRecipeResponse(Long id, String title, String content, int reci
                                  String category) {
     public static ReadRecipeResponse of(Long id, String title, String content, int recipeCount, int reviewCount,
                                         float ratingAverage,
+                                        boolean isMe,
                                         boolean isClickedScrap,
                                         boolean isWritten,
                                         Member member,
@@ -30,6 +32,7 @@ public record ReadRecipeResponse(Long id, String title, String content, int reci
                 recipeCount,
                 reviewCount,
                 ratingAverage,
+                isMe,
                 isClickedScrap,
                 isWritten,
                 new FindMember(member.getId(), member.getName()),

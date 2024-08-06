@@ -153,7 +153,7 @@ public class MainPageService {
             List<Onboard> onboards = memberOnboard.get(category);
             recipes.addAll(bestRecipe(recipeList, onboards, RECOMMEND_RECIPECOUNT / memberOnboard.size()));
         }
-        if((recipes.size() < RECOMMEND_RECIPECOUNT) && (recipeRepository.findAll().size() < RECOMMEND_RECIPECOUNT)) {
+        if((recipes.size() < RECOMMEND_RECIPECOUNT) && (recipeRepository.findAll().size() >= RECOMMEND_RECIPECOUNT)) {
             //추천게시물의 수가 6개보다 작고 들어있는 레시피의 총 수가 6개 이상일때 실행한다.
            for(Recipe recipe : recipeRepository.findAll()) {
                if(!recipes.contains(recipe))

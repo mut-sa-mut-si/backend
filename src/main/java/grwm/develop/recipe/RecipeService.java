@@ -243,14 +243,13 @@ public class RecipeService {
         float ratingAverage = averageRating(reviews);
         if (member == null) {
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, false, true, writer, images, hashtags, reviews, recipe);
+                    reviewCount, ratingAverage, false, true, false, writer, images, hashtags, reviews, recipe);
         } else {
             boolean isClickedScrap = scrapRepository.existsByMemberIdAndRecipeId(member.getId(), recipe.getId());
             return ReadRecipeResponse.of(recipe.getId(), recipe.getTitle(), recipe.getContent(), recipeCount,
-                    reviewCount, ratingAverage, isClickedScrap, isWriting(member, recipe), writer, images, hashtags,
-                    reviews, recipe);
+                    reviewCount, ratingAverage, isMyRecipe(id, member.getId()), isClickedScrap,
+                    isWriting(member, recipe), writer, images, hashtags, reviews, recipe);
         }
-
     }
 
     public ReadLockRecipeResponse findRockRecipe(Member member, Long id) {
@@ -382,9 +381,7 @@ public class RecipeService {
     }
 
     private boolean isMyRecipe(Long recipeId, Long memberId) {
-        if (recipeId.equals(memberId)) {
-            return true;
-        }
-        return false;
+        Recipe recipe = recipeRepository.findById(recipeId).orElseThrow(EntityNotFoundException::new);
+        return recipe.getMember().getId().equals(memberId);
     }
 }
